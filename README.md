@@ -2,11 +2,13 @@
 Support for ***NPGR003 (Introduction to Computer Graphics)*** lecture.
 Year 2023/24.
 
+See [NPGR003 lecture - current info](https://cgg.mff.cuni.cz/~pepca/lectures/npgr003.current.cz.php).
+
 ## Lab plan
 Every `NN-*` directory refers to an item in the lab plan
 (usually you will find a programming task there). You don't have
 to do all of them to pass the lab, 1/2 to 2/3 is enough (see the
-points
+points in task definitions and in the shared table).
 
 This global `README.md` defines general rules and conditions,
 see individual directories for task-specific iunformation.
@@ -14,7 +16,7 @@ see individual directories for task-specific iunformation.
 ## Point table
 See [this shared table]()
 for current points. Please check the due dates of each task.
-The primary source of organizational information is the shared table, not
+The primary source of organizational information is **the shared table**, not
 the GIT repository.
 
 Contact me <pepca@cgg.mff.cuni.cz> with any suggestions, comments or
@@ -24,7 +26,7 @@ lab supervisor first.
 ## C# source files in task directories
 Some directories contain support files from the teachers. The default
 version uses `.NET 7.0`, you can change it to `.NET 6.0` variant
-if necessary. But today (October 2023) `NET 7` is reported to work
+if necessary. But today (October 2023) `.NET 7` is reported to work
 well on Windows, Linux and macOS.
 
 We use `Visual Studio 2022`, the "Community" (free) version
@@ -47,7 +49,7 @@ Credit bonuses/maluses for using an AI assistant are still undecided.
 Over the course of the semester, some of you will have the opportunity
 to write short reports and present your experiences to the rest of the
 group (and you'll get extra credit for doing so).
- 
+
 ## Notes
 * If anything doesn't work well in your **Linux/macOS environment**,
   you should write me (<pepca@cgg.mff.cuni.cz>) as soon as possible.
