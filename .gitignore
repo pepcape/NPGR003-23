@@ -396,3 +396,8 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# HDR images and logs must be opt-in
+*.hdr
+*.pfm
+log.txt
