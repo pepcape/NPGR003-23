@@ -11,10 +11,10 @@ to do all of them to pass the lab, 1/2 to 2/3 is enough (see the
 points in task definitions and in the shared table).
 
 This global `README.md` defines general rules and conditions,
-see individual directories for task-specific iunformation.
+see individual directories for task-specific information.
 
 ## Point table
-See [this shared table]()
+See [this shared table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5exOYW1eUfQWY2WoMjo1menbjQIU7Gvs4/edit?usp=sharing)
 for current points. Please check the due dates of each task.
 The primary source of organizational information is **the shared table**, not
 the GIT repository.
@@ -25,12 +25,12 @@ lab supervisor first.
 
 ## C# source files in task directories
 Some directories contain support files from the teachers. The default
-version uses `.NET 7.0`, you can change it to `.NET 6.0` variant
+version uses `.NET 7`, you can change it to `.NET 6` variant
 if necessary. But today (October 2023) `.NET 7` is reported to work
 well on Windows, Linux and macOS.
 
-We use `Visual Studio 2022`, the "Community" (free) version
-is good enough for all tasks.
+We use `Visual Studio 2022`, the [Community](https://visualstudio.microsoft.com/vs/community/)
+(free) version is good enough for all tasks.
 
 ## AI assistants
 The use of **AI assistants (based on Large Language Models)** is not prohibited,
