@@ -61,8 +61,14 @@ Use the [separate file DOC.md](DOC.md) to avoid merge conflicts.
   * "ornament" could use a recursive pattern or another sort of repetition...
 * more command-line arguments
 
-**Use of AI assistant**
+## Use of AI assistant
 
 Recommended but not rewarded. Only in exceptional cases, if working with
 an assistant would lead to interesting progress or unexpected results,
 extra points may be awarded.
+
+# Example
+This image is downsampled, so it doesn't contain enough colors to meet
+the requirements of the task!
+
+![Downsampled example image](example.jpg)
