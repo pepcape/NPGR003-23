@@ -1,10 +1,10 @@
 # Task 00 - GIT repository setup
-* Create your own GIT repository ñ [GitHub](https://github.com/) and
+* Create your own GIT repository ‚Äì [GitHub](https://github.com/) and
   [GitLab](https://gitlab.mff.cuni.cz/) are two recommended platforms.
-  Use the `git fork` command from this repository for a comfortable way to
+  Set the `remote` repository to this one for a comfortable way to
   integrate future updates.
 * Grant the R/O permission to your lab supervisor:
-  * Josef Pelik·n - [GitHub link](https://github.com/pepcape),
+  * Josef Pelik√°n - [GitHub link](https://github.com/pepcape),
     [GitLab link](https://gitlab.mff.cuni.cz/pelikan)
-  * Tom·ö Iser - [GitHub link](https://github.com/tomasiser),
+  * Tom√°≈° Iser - [GitHub link](https://github.com/tomasiser),
     [GitLab link](https://gitlab.mff.cuni.cz/isert)
