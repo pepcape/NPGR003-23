@@ -24,10 +24,9 @@ complaints. If you are in a different lab group, please contact your
 lab supervisor first.
 
 ## C# source files in task directories
-Some directories contain support files from the teachers. The default
-version uses `.NET 7`, you can change it to `.NET 6` variant
-if necessary. But today (October 2023) `.NET 7` is reported to work
-well on Windows, Linux and macOS.
+Some directories contain support files from the teachers. We are using the `.NET 6`
+(select `.NET 6.0 (Long Term Support)` while creating a new project),
+it works well on Windows, Linux and macOS.
 
 We use `Visual Studio 2022`, the [Community](https://visualstudio.microsoft.com/vs/community/)
 (free) version is good enough for all tasks.
@@ -54,18 +53,21 @@ group (and you'll get extra credit for doing so).
 * If anything doesn't work well in your **Linux/macOS environment**,
   you should write me (<pepca@cgg.mff.cuni.cz>) as soon as possible.
   Of course you could report positive experience in Linux/macOS as well.
-* We have a recommendation for you - use
-  the `git fork` command at the beginning of the semester and
-  you can work in the same directory structure. You will own your
+* We have a recommendation for you - create your own private repository
+  and `fetch` the complete content of this repository into it.
+  You want to set the `remote` to our public repository to update
+  the data later. 
+  You will own your
   repository ([GitHub](https://github.com/) or
   [GitLab](https://gitlab.mff.cuni.cz/) are recommended platforms),
   you must send us the URL! Don't try to "Push"/"Pull request"
   the original repository, you won't have write permissions to it!
 * Your repositories should remain **private**, you have to grant
-  R/O permission to your lab supervisor:
-  * Josef Pelik·n - [GitHub link](https://github.com/pepcape),
+  permission to your lab supervisor (either by setting a colaborator
+  (GitHub) or just by forking (GitLab - we need to check this)):
+  * Josef Pelik√°n - [GitHub link](https://github.com/pepcape),
 	[GitLab link](https://gitlab.mff.cuni.cz/pelikan)
-  * Tom·ö Iser - [GitHub link](https://github.com/tomasiser),
+  * Tom√°≈° Iser - [GitHub link](https://github.com/tomasiser),
 	[GitLab link](https://gitlab.mff.cuni.cz/isert)
 * If you want use any third party library, do it correctly and use the
   [NuGet system](https://www.nuget.org/). Many pilot projects are
