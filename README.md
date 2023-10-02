@@ -65,8 +65,8 @@ group (and you'll get extra credit for doing so).
   R/O permission to your lab supervisor:
   * Josef Pelikán - [GitHub link](https://github.com/pepcape),
 	[GitLab link](https://gitlab.mff.cuni.cz/pelikan)
-  * Tomáš Iser - [GitHub link](),
-	[GitLab link]()
+  * Tomáš Iser - [GitHub link](https://github.com/tomasiser),
+	[GitLab link](https://gitlab.mff.cuni.cz/isert)
 * If you want use any third party library, do it correctly and use the
   [NuGet system](https://www.nuget.org/). Many pilot projects are
   using libraries already (e.g. [SixLabors.ImageSharp](https://www.nuget.org/packages/SixLabors.ImageSharp)),
