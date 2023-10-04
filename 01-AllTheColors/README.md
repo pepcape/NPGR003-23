@@ -18,7 +18,7 @@ with **all RGB colors** in it. That means it must have at least
   message and abort without generating an image.
 
 ## Notes
-You should use `.NET 7` which is available for all platforms now.
+You should use `.NET 6` which is available on Windows, macOS and Linux.
 
 ### Image library
 Using of a simple image processing library is recommended. My option would
@@ -62,10 +62,17 @@ Use the [separate file DOC.md](DOC.md) to avoid merge conflicts.
 * more command-line arguments
 
 ## Use of AI assistant
-
 Recommended but not rewarded. Only in exceptional cases, if working with
 an assistant would lead to interesting progress or unexpected results,
 extra points may be awarded.
+
+# Pilot version
+We have included a pilot version of the project, which is not able to generate a 16M
+color image, but it shows the use of the `SixLabors.ImageSharp` library
+to create and save a PNG image with a blue-red checkerboard.
+
+The code was recommended by a `ChatGPT 3.5` assistant,
+the whole conversation is archived [here](https://chat.openai.com/share/048bc53b-9de5-49b6-8fce-302da01b07a9).
 
 # Example
 This image is downsampled, so it doesn't contain enough colors to meet
