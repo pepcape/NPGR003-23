@@ -59,7 +59,7 @@ detailed instructions for each of them. The only bigger difference
 is in the 3rd step (granting permissions to us = lab supervisors).
 
 ### GitHub
-1. You have to set up a new private repository yourself.
+1. You have to set up a new **private repository** yourself.
 2. Connect it to
 our shared GIT using `git remote`. The command might look like this
 ```bash
@@ -74,7 +74,7 @@ https://github.com/tomasiser.
 real name.
 
 ### GitLab (MFF UK server)
-1. You have to set up a new private repository yourself.
+1. You have to set up a new **private repository** yourself.
 2. Connect it to
 our shared GIT using `git remote`. The command might look like this
 ```bash
@@ -94,7 +94,7 @@ https://gitlab.mff.cuni.cz/isert.
   just need to maintain some basic order so that we can find our way
   around when we review your solution. Please use `DOC.md` for that.
 * We suggest that you add a **tag** with the name of the task to the repository
-  at the time of submission (for example, `01-AllTheColors`).
+  at the time of submission (for example, `01-solution`).
   See the [git tag documentation](https://git-scm.com/book/en/v2/Git-Basics-Tagging).
 * Of course, it wouldn't hurt to send us an **email** to let us know that
   you've solved the task. In time, we will see if the "tag" system is sufficient.
