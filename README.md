@@ -49,37 +49,65 @@ Over the course of the semester, some of you will have the opportunity
 to write short reports and present your experiences to the rest of the
 group (and you'll get extra credit for doing so).
 
+## GIT instructions
+You will work in your own **private repositories**.
+You will start from our shared repository and add your own code and
+documentation as you solve individual tasks.
+
+We recommend using one of the following platforms - there are more
+detailed instructions for each of them. The only bigger difference
+is in the 3rd step (granting permissions to us = lab supervisors).
+
+### GitHub
+1. You have to set up a new private repository yourself.
+2. Connect it to
+our shared GIT using `git remote`. The command might look like this
+```bash
+$ git remote add origin https://github.com/pepcape/NPGR003-23.git
+```
+3. Finally, you have to give us permissions to access your private
+repository, this is done using the **"Collaborator"** role.
+Depending on who your lab supervisor is, you invite either
+https://github.com/pepcape or
+https://github.com/tomasiser.
+4. If your GitHub username is a **nickname**, please email us with your
+real name.
+
+### GitLab (MFF UK server)
+1. You have to set up a new private repository yourself.
+2. Connect it to
+our shared GIT using `git remote`. The command might look like this
+```bash
+$ git remote add origin https://github.com/pepcape/NPGR003-23.git
+```
+3. Finally, you have to give us permissions to access your private
+repository, this is done using the **"Reporter"** role.
+Depending on who your lab supervisor is, you invite either
+https://gitlab.mff.cuni.cz/pelikan or
+https://gitlab.mff.cuni.cz/isert.
+
 ## Notes
 * If anything doesn't work well in your **Linux/macOS environment**,
   you should write me (<pepca@cgg.mff.cuni.cz>) as soon as possible.
   Of course you could report positive experience in Linux/macOS as well.
-* We have a recommendation for you - create your own private repository
-  and `fetch` the complete content of this repository into it.
-  You want to set the `remote` to our public repository to update
-  the data later. 
-  You will own your
-  repository ([GitHub](https://github.com/) or
-  [GitLab](https://gitlab.mff.cuni.cz/) are recommended platforms),
-  you must send us the URL! Don't try to "Push"/"Pull request"
-  the original repository, you won't have write permissions to it!
-* Your repositories should remain **private**, you have to grant
-  permission to your lab supervisor (either by setting a colaborator
-  (GitHub) or just by forking (GitLab - we need to check this)):
-  * Josef Pelikán - [GitHub link](https://github.com/pepcape),
-	[GitLab link](https://gitlab.mff.cuni.cz/pelikan)
-  * Tomáš Iser - [GitHub link](https://github.com/tomasiser),
-	[GitLab link](https://gitlab.mff.cuni.cz/isert)
+* You can work in your repositories without major restrictions, you
+  just need to maintain some basic order so that we can find our way
+  around when we review your solution. Please use `DOC.md` for that.
+* We suggest that you add a **tag** with the name of the task to the repository
+  at the time of submission (for example, `01-AllTheColors`).
+  See the [git tag documentation](https://git-scm.com/book/en/v2/Git-Basics-Tagging).
+* Of course, it wouldn't hurt to send us an **email** to let us know that
+  you've solved the task. In time, we will see if the "tag" system is sufficient.
+* If you want to put your solution in new or unusual directories,
+  please write about it in the `DOC.md` as well.
 * If you want use any third party library, do it correctly and use the
   [NuGet system](https://www.nuget.org/). Many pilot projects are
   using libraries already (e.g. [SixLabors.ImageSharp](https://www.nuget.org/packages/SixLabors.ImageSharp)),
   so learn by example.
-* If you need to write some text, documentation (mandatory or voluntary)
+* For all your documentation please
   use the [MarkDown (.md)](https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax)
   syntax ([another MarkDown page](https://www.markdownguide.org/basic-syntax/))
-
+* Use the [separate file DOC.md](DOC.md) in each task directory to avoid
+  merge conflicts. Don't edit existing `README.md` files!
 * Visual Studio 2022 supports direct **MarkDown editing** (with live
   result preview) starting from the 17.5 update
-
-# Your Documentation
-Use the [separate file DOC.md](DOC.md) in each task directory to avoid
-merge conflicts. Don't edit existing `README.md` files!
