@@ -21,7 +21,7 @@ scheme from [Adobe Color](https://color.adobe.com/create/color-wheel).
   (which you must explain)
 
 ## Notes
-You should use `.NET 7` which is available for all platforms now.
+You should use `.NET 6` which is available for all platforms now.
 
 ### Image library
 Using of a simple image processing library is recommended. My option would
@@ -64,4 +64,4 @@ pixel input image, single color image, etc.).
 
 # Example
 See the [Cinema Palettes page](https://www.facebook.com/cinemapalettes) for many examples.
-Most of them are good enough.
+Most are good enough.
