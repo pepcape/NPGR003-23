@@ -44,8 +44,9 @@ It is wise to have reasonable default settings, you can reduce debugging time.
 Don't forget to include several reasonable examples in your documentation,
 to show everything your program can do.
 
-# Your Documentation
-Use the [separate file DOC.md](DOC.md) to avoid merge conflicts.
+# Your solution
+Please place your solution in a separate [solutions](solutions/README.md)
+directory in the repository. You'll find short instructions there.
 
 # Credit points
 **Basic solution: 9 points**

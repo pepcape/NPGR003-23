@@ -35,8 +35,9 @@ For the parsing of command-line arguments I'd recommend
 When you use an AI wizard, it may suggest a numerical or statistical library.
 You can use it, but do it properly through the [NuGet system](https://www.nuget.org/).
 
-# Your Documentation
-Use the [separate file DOC.md](DOC.md) to avoid merge conflicts.
+# Your solution
+Please place your solution in a separate [solutions](solutions/README.md)
+directory in the repository. You'll find short instructions there.
 
 # Credit points
 It has not yet been determined.
