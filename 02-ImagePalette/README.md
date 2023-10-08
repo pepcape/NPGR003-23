@@ -58,7 +58,6 @@ It has not yet been determined.
 -->
 
 ## Use of AI assistant
-
 Using an AI assistant is recommended! But you have to be very critical and
 test all its suggestions thoroughly. Especially test singular cases (one
 pixel input image, single color image, etc.).

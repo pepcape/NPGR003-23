@@ -49,7 +49,7 @@ Please place your solution in a separate [solutions](solutions/README.md)
 directory in the repository. You'll find short instructions there.
 
 # Credit points
-**Basic solution: 9 points**
+**Basic solution: 8 points**
 * all images must contain 16M colors
 * image size in pixels via arguments
 * output file name specified in an argument
