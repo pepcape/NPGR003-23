@@ -39,6 +39,13 @@ You can use it, but do it properly through the [NuGet system](https://www.nuget.
 Please place your solution in a separate [solutions](solutions/README.md)
 directory in the repository. You'll find short instructions there.
 
+# Launch date
+**Monday 16 October 2023**
+(Don't work on the solution before this date)
+
+# Deadline
+See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5exOYW1eUfQWY2WoMjo1menbjQIU7Gvs4/edit?usp=sharing).
+
 # Credit points
 It has not yet been determined.
 

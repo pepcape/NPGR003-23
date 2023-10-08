@@ -49,10 +49,14 @@ Example of files and directories that should be copied to the `solutions` direct
 /01-AllTheColors/01-AllTheColors.csproj
 /01-AllTheColors/01-AllTheColors.sln
 /01-AllTheColors/Program.cs
-/01-AllTheColors/README.md    (should be overwritten later)
+/01-AllTheColors/README.md    (should be overwritten later by README-TEMPLATE.md)
 /01-AllTheColors/Properties/
 /01-AllTheColors/Properties/launchSettings.json
 ```
+
+Template for your documentation of the finished task is [here](solutions/README-TEMPLATE.md). Copy
+the file to every directory with your solution (over the original `README.md`) and
+edit all the sections.
 
 ## AI assistants
 The use of **AI assistants (based on Large Language Models)** is not prohibited,

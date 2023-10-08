@@ -14,7 +14,7 @@ with **all RGB colors** in it. That means it must have at least
 * In any case, your image **must have all 2^24 RGB colors!**
 * The program should use simple **command-line arguments** defining desired
   image size, image file name, mode and random seed if relevant for the mode.
-  In case of image size smaller than 16M pixels program could write an error
+  In case of image size smaller than 16M pixels program must write an error
   message and abort without generating an image.
 
 ## Notes
@@ -48,13 +48,20 @@ to show everything your program can do.
 Please place your solution in a separate [solutions](solutions/README.md)
 directory in the repository. You'll find short instructions there.
 
+# Launch date
+**Monday 9 October 2023**
+(Don't work on the solution before this date)
+
+# Deadline
+See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5exOYW1eUfQWY2WoMjo1menbjQIU7Gvs4/edit?usp=sharing).
+
 # Credit points
 **Basic solution: 8 points**
 * all images must contain 16M colors
 * image size in pixels via arguments
 * output file name specified in an argument
 * mode selection by command line argument
-* at least three modes: `trivial`, `random`, `pattern` (pattern could be static)
+* at least three modes: `trivial`, `random`, `pattern` (pattern could be simple and static)
 
 **Bonus points: up to 6 more points**
 * more patterns (parametrizable, visually more appealing)

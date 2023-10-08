@@ -24,7 +24,7 @@ Example of files and directories that should be copied to this directory:
 /01-AllTheColors/01-AllTheColors.csproj
 /01-AllTheColors/01-AllTheColors.sln
 /01-AllTheColors/Program.cs
-/01-AllTheColors/README.md    (should be overwritten later)
+/01-AllTheColors/README.md    (should be overwritten later by README-TEMPLATE.md)
 /01-AllTheColors/Properties/
 /01-AllTheColors/Properties/launchSettings.json
 ```
@@ -32,5 +32,5 @@ Example of files and directories that should be copied to this directory:
 # Rewrite this README.md file
 Please overwrite this `README.md` file with your own documentation.
 
-Every task should have its own documentation, use default file-names
-`README.md` as well.
+Every task should have its own documentation, use [README-TEMPLATE.md](README-TEMPLATE.md)
+and rename it to `README.md`.
