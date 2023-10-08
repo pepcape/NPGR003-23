@@ -10,7 +10,24 @@ a new `.csproj` file for each task. Example:
 /solutions/01-AllTheColors/01-AllTheColors.csproj
 ```
 By the way, this is the easiest way to create a new project + solution
-in `Visual Studio`.
+using `Visual Studio`.
+
+## Second option - to build on a pilot solution
+If you want to extend a pilot project, just copy everything in a task directory
+to this directory, rewrite the `README.md` and you are ready
+to work on your copy. To be safe, remove the `.vs`,
+`obj` and `bin` subdirectories first.
+
+Example of files and directories that should be copied to this directory:
+```
+/01-AllTheColors/
+/01-AllTheColors/01-AllTheColors.csproj
+/01-AllTheColors/01-AllTheColors.sln
+/01-AllTheColors/Program.cs
+/01-AllTheColors/README.md    (should be overwritten later)
+/01-AllTheColors/Properties/
+/01-AllTheColors/Properties/launchSettings.json
+```
 
 # Rewrite this README.md file
 Please overwrite this `README.md` file with your own documentation.

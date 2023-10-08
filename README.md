@@ -31,6 +31,29 @@ it works well on Windows, Linux and macOS.
 We use `Visual Studio 2022`, the [Community](https://visualstudio.microsoft.com/vs/community/)
 (free) version is good enough for all tasks.
 
+## Solutions
+Please place all your solutions in separate [solutions](solutions/README.md)
+directory in the repository. **One subdirectory per task**.
+You'll find short instructions there.
+
+The naming conventions in the standard Visual Studio project creation procedures
+allow you to simply copy a pilot task project to the `solutions` directory.
+So if you want to extend a pilot project, just copy everything in a task directory
+to the `solutions` directory, rewrite the `README.md` and you are ready
+to work on your copy. To be safe, remove the `.vs`,
+`obj` and `bin` subdirectories first.
+
+Example of files and directories that should be copied to the `solutions` directory:
+```
+/01-AllTheColors/
+/01-AllTheColors/01-AllTheColors.csproj
+/01-AllTheColors/01-AllTheColors.sln
+/01-AllTheColors/Program.cs
+/01-AllTheColors/README.md    (should be overwritten later)
+/01-AllTheColors/Properties/
+/01-AllTheColors/Properties/launchSettings.json
+```
+
 ## AI assistants
 The use of **AI assistants (based on Large Language Models)** is not prohibited,
 on the contrary! We welcome you to use them under two conditions:
