@@ -11,9 +11,11 @@
   <ItemGroup>
     <None Remove="checkerboard.png" />
     <None Remove="example.jpg" />
+    <None Remove="output.png" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="SixLabors.ImageSharp" Version="3.0.2" />
   </ItemGroup>
 
