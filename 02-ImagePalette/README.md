@@ -70,7 +70,19 @@ Using an AI assistant is recommended! But you have to be very critical and
 test all its suggestions thoroughly. Especially test singular cases (one
 pixel input image, single color image, etc.).
 
+# Pilot version
+We have included a pilot version of the project, just showing how the SVG
+output can be done in C#. Only the `-o` command line argument is parsed, if
+present, the SVG output is generated, otherwise a textual output to `stdout`
+is used.
+
+The SVG generating code was generated with the help of `ChatGPT-3.5`. A couple
+of fixes were done manually, the overall experience can be classified as "good".
+The conversation is archived [here](https://chat.openai.com/share/c0bd824d-71e7-403d-a2a2-e418d4f16435).
+
 # Input images
+You can use following images for testing.
+
 [Red stop sign](https://unsplash.com/photos/a-snow-covered-street-with-a-red-stop-sign-Ow3ycF_ZYI4)  
 [Orange windows](https://unsplash.com/photos/z9hvkSDWMIM)  
 [Pool](https://unsplash.com/photos/c4Eh-VZcWoc)  
