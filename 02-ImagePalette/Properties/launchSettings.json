@@ -2,6 +2,7 @@
   "profiles": {
     "02-ImagePalette": {
       "commandName": "Project",
+      "commandLineArgs": "-o palette.svg",
       "workingDirectory": "$(ProjectDir)"
     }
   }

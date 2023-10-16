@@ -73,7 +73,7 @@ pixel input image, single color image, etc.).
 # Pilot version
 We have included a pilot version of the project, just showing how the SVG
 output can be done in C#. Only the `-o` command line argument is parsed, if
-present, the SVG output is generated, otherwise a textual output to `stdout`
+present, the SVG output is generated, otherwise a textual CSV output to `stdout`
 is used.
 
 The SVG generating code was generated with the help of `ChatGPT-3.5`. A couple
