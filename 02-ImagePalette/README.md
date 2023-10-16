@@ -11,11 +11,17 @@ scheme from [Adobe Color](https://color.adobe.com/create/color-wheel).
 * Your task is to write a **C# command-line** program which reads an input image
   and prints down the palette in RGB
 * Use simple text output format: three numbers on a line, one line per color
-  * for bonus points, you can create a simple output image with colored rectangles
+  * Alternative output formats (PNG image and SVG image) will be demonstrated
+	in the lab. They will be included in a pilot project here.
 * One command line argument defines the **input file name**, another the **desired
   number of colors**, for example
 ```bash
  > imagepalette -i "input.png" -c 10
+```
+* For visual output formats include a `-o` option, see examples
+```bash
+ > imagepalette -i "input.png" -c 10 -o "palette.png"
+`> imagepalette -i "input.png" -c 10 -o "palette.svg"
 ```
 * You may not meet the required number of colors if you have serious reasons
   (which you must explain)
@@ -47,22 +53,16 @@ directory in the repository. You'll find short instructions there.
 See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5exOYW1eUfQWY2WoMjo1menbjQIU7Gvs4/edit?usp=sharing).
 
 # Credit points
-It has not yet been determined.
+**Basic solution: 8 points**
+* must not crash under any circumstances
+* reasonable palette for reasonable input images
+* input file and number of colors in command line arguments
+* at least one of the "visual" outputs (SVG or PNG)
 
-<!--
-**Basic solution: 9 points**
-* all images must contain 16M colors
-* image size in pixels via arguments
-* output file name specified in an argument
-* mode selection by command line argument
-* at least three modes: `trivial`, `random`, `pattern` (pattern could be static)
-
-**Bonus points: up to 6 more points**
-* more patterns (parametrizable, visually more appealing)
-  * "mandala" style (circular symmetry)
-  * "ornament" could use a recursive pattern or another sort of repetition...
-* more command-line arguments
--->
+**Bonus points: up to 7 more points**
+* quality of output palette
+* handling of difficult images
+* output colors are pleasantly sorted
 
 ## Use of AI assistant
 Using an AI assistant is recommended! But you have to be very critical and
@@ -71,4 +71,4 @@ pixel input image, single color image, etc.).
 
 # Example
 See the [Cinema Palettes page](https://www.facebook.com/cinemapalettes) for many examples.
-Most are good enough.
+Most are good enough (but input images are quite easy to process)...
