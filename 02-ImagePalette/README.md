@@ -20,7 +20,7 @@ less number of colors (minimum palette size is 1).
 * For visual output formats include a `-o` option, see examples
 ```bash
  > imagepalette -i "input.png" -c 10 -o "palette.png"
-`> imagepalette -i "input.png" -c 10 -o "palette.svg"
+ > imagepalette -i "input.png" -c 10 -o "palette.svg"
 ```
 * You may not meet the required number of colors if you have serious reasons
   (which you must explain). The colour-poor image is one of the reasons you
@@ -40,6 +40,13 @@ For the parsing of command-line arguments I'd recommend
 ### More libraries
 When you use an AI wizard, it may suggest a numerical or statistical library.
 You can use it, but do it properly through the [NuGet system](https://www.nuget.org/).
+
+## Ideas to consider
+* Play with other color spaces: HSV, CIE Lab*, etc.
+* **Clustering** (do your own research!)
+  * other color metrics
+  * cluster post-processing
+* **Color quantization** (do your own research!)
 
 # Your solution
 Please place your solution in a separate [solutions](solutions/README.md)
