@@ -54,10 +54,11 @@ See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5
 
 # Credit points
 **Basic solution: 8 points**
-* must not crash under any circumstances
-* reasonable palette for reasonable input images
 * input file and number of colors in command line arguments
-* at least one of the "visual" outputs (SVG or PNG)
+* must not crash under any circumstances
+* text palette output to `stdout`
+* at least one of the "visual" outputs (SVG or PNG) - the `-o` argument
+* reasonable palette for reasonable input images
 
 **Bonus points: up to 7 more points**
 * quality of output palette
@@ -68,6 +69,16 @@ See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5
 Using an AI assistant is recommended! But you have to be very critical and
 test all its suggestions thoroughly. Especially test singular cases (one
 pixel input image, single color image, etc.).
+
+# Input images
+[Red stop sign](https://unsplash.com/photos/a-snow-covered-street-with-a-red-stop-sign-Ow3ycF_ZYI4)  
+[Orange windows](https://unsplash.com/photos/z9hvkSDWMIM)  
+[Pool](https://unsplash.com/photos/c4Eh-VZcWoc)  
+[Cat](https://unsplash.com/photos/7xsBS4vFR-g)  
+[Sunset, golden hour](https://unsplash.com/photos/WY_z540lzlU)  
+[NYC busy street](https://unsplash.com/photos/esPP01NpBfY)  
+[Narrow road](https://unsplash.com/photos/nTTh5UXkHp8)  
+[Fruits, many colors](https://unsplash.com/photos/ihP15orhXT4)
 
 # Example
 See the [Cinema Palettes page](https://www.facebook.com/cinemapalettes) for many examples.
