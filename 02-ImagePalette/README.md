@@ -4,14 +4,13 @@ color palette from an input raster image. The inspiration for this assignment
 is a project [Cinema Palettes](https://www.facebook.com/cinemapalettes).
 
 Your algorithm should analyze the input image and provide 3 to 10 characteristic
-colors. If the image has a smaller number of hues (unique colors), you can fill
-the rest of the palette with additional colors, for example inspired by a color
-scheme from [Adobe Color](https://color.adobe.com/create/color-wheel).
+colors. If the image has a smaller number of hues (unique colors), you can output
+less number of colors (minimum palette size is 1).
 
 * Your task is to write a **C# command-line** program which reads an input image
   and prints down the palette in RGB
 * Use simple text output format: three numbers on a line, one line per color
-  * Alternative output formats (PNG image and SVG image) will be demonstrated
+  * alternative output formats (PNG image and SVG image) will be demonstrated
 	in the lab. They will be included in a pilot project here.
 * One command line argument defines the **input file name**, another the **desired
   number of colors**, for example
@@ -24,7 +23,8 @@ scheme from [Adobe Color](https://color.adobe.com/create/color-wheel).
 `> imagepalette -i "input.png" -c 10 -o "palette.svg"
 ```
 * You may not meet the required number of colors if you have serious reasons
-  (which you must explain)
+  (which you must explain). The colour-poor image is one of the reasons you
+  don't need to explain.
 
 ## Notes
 You should use `.NET 6` which is available for all platforms now.
