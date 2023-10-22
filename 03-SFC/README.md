@@ -7,12 +7,12 @@ The best ordering gives us the least entropy when plugged into the simple
 First-Order Predictive Compression scheme.
 
 # First-Order Predictive Compression
-The simplest predictive compression used in contexts where no memory is required and
+The simplest predictive compression used in contexts where low memory footprint and
 very fast computation is required. Another condition is that the data is in 1D (sequence) form,
 so 2D images must be linearized by some "pixel ordering" method.
 
 The method involves predicting the value of a given sample based on the value of the previous sample
-("1-order"), and then encoding the difference between the predicted value and the actual value.
+("first-order"), and then encoding the difference between the predicted value and the actual value.
 This technique can significantly reduce the amount of data to be stored or transmitted
 when the input data is highly correlated (i.e., neighboring samples have similar values).
 
@@ -33,7 +33,15 @@ number of possible residuals: `-255` to `255`.
 
 **Entropy Encoding**: Encode the residuals using an entropy encoding method such as Huffman coding,
 Run-Length Encoding, or Arithmetic coding to efficiently compress the data. Our task is to find
-good pixel orders, so we will measure the theoretical **entropy**.
+good pixel orders, so - instead of the actual encoding - we only measure the theoretical
+**entropy**.
+
+### Second-Order Predictor
+Going one step further, we can use another of the *previously processed samples**.
+The most popular predictor is **s'(i) = 2s(i-1) - s(i-2)** (i. e. the **linear predictor**).
+The residuals are in the range `-510` to `510`.
+If you are interested, you can implement this alternative in addition to the previous one,
+using `-p 2` instead of the default `-p 1`.
 
 # Task
 You already have a C# "command line" project that loads the input raster image and scans its
@@ -62,7 +70,8 @@ However, you must also use the uniform format of specifying the method with a si
 numeric parameter `-m <number>`, where the output is just a number expressing the
 entropy in bits. Leave the pilot pixel order as `-m 0` and number your methods from one.
 If your program gets a number greater than what is implemented, just return a line with
-no number (like "Invalid method.").
+no number (like "Invalid method."). Select **the best method** and let the user to use it
+simply by `-m -1`.
 
 The command line argument defining the input file should remain `-i <filename>`. So the
 example of the default scanline order used on input file `masa512g.png` is:
@@ -76,6 +85,30 @@ of this page), we'll be happy and you'll get extra points.
 However, you must present the results in a clear form (spreadsheet or graphs) and preferably
 include your notes and observations.
 
+# Command line arguments
+Mandatory arguments:
+* `-i <filename>` - **input image file**
+* `-m <method>` - **pixel order method**, `0` is for default scanline order, use **positive
+  integers** for your methods. Your favorite method should be encoded as `-m -1`
+* `-p <order>` - **order of the predictor**. Default is `0`, you don't need to change that,
+  unless you are experimenting with higher predictors. You must accept the argument anyway.
+
+Optional arguments:
+* human-readable alternative of the `-m`
+* **color channel selector** - if present, the analysis will be applied to the selected channel
+  (R, G, or B) only. If not present (**=default**), image pixels are converted to grayscale
+  before processing.
+* any reasonable argument you will need - don't forget to describe it in the documentation.
+
+# Output
+If everything is ok, you should write the **entropy in bits** as the first output line
+of `stdout` (yes, just one decimal integer). In case of an unknown method (`-m`), do
+not write a number, use an error message instead.
+
+On the next lines of the output you can write any useful information, e.g. ordering
+method used, color channels analyzed, image size in pixels, entropy per pixel,
+predictor order, etc.
+
 # Launch date
 **Monday 23 October 2023**
 (Don't work on the solution before this date)
@@ -84,7 +117,18 @@ include your notes and observations.
 See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5exOYW1eUfQWY2WoMjo1menbjQIU7Gvs4/edit?usp=sharing).
 
 # Credit points
-It has not yet been determined.
+**Basic solution: 8 points**
+* must not crash under any circumstances
+* must use the `interface PixelOrder` and the `-i`, `-m` and `-p` arguments described earlier
+* at least four additional pixel orderings
+* measure their efficiency and select your favorite method as `-m -1`
+
+**Bonus points: up to 7 more points**
+* more pixel orderings
+* spreadsheet or graph-based efficiency analysis; interesting observations pointed out
+  in the report are appreciated.
+* experiments with different predictor orders (0 is trivial, second-order predictor might be
+  interesting)
 
 ## Use of AI assistant
 Using an AI assistant is recommended! But you have to be critical and
@@ -94,4 +138,5 @@ pixel image, 1xN image, etc.).
 ## Input Images
 
 ![Masa512g](masa512g.png)  
+![EGSR1](egsr1.png)  
 ...
