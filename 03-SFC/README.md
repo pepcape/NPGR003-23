@@ -37,7 +37,7 @@ good pixel orders, so - instead of the actual encoding - we only measure the the
 **entropy**.
 
 ### Second-Order Predictor
-Going one step further, we can use another of the *previously processed samples**.
+Going one step further, we can use another of the **previously processed samples**.
 The most popular predictor is **s'(i) = 2s(i-1) - s(i-2)** (i. e. the **linear predictor**).
 The residuals are in the range `-510` to `510`.
 If you are interested, you can implement this alternative in addition to the previous one,
@@ -47,7 +47,7 @@ using `-p 2` instead of the default `-p 1`.
 You already have a C# "command line" project that loads the input raster image and scans its
 pixels.
 
-The pilot implementation uses only normal line-by-line scanning ("scanline order").
+The pilot implementation uses only normal **line-by-line scanning ("scanline order")**.
 The pixels are then sent to a simulated predictive codec, where a first-order prediction is
 implemented, and then the total entropy of the entire sequence is measured.
 The goal is to find a pixel order that yields the lowest entropy for the widest class
@@ -137,6 +137,10 @@ pixel image, 1xN image, etc.).
 
 ## Input Images
 
-![Masa512g](masa512g.png)  
+![Masa](masa512g.png)  
 ![EGSR1](egsr1.png)  
-...
+![Peony](2022-06-06-IMG_9308_raw_1900.jpg)  
+![Pelican](2023-05-21-IMG_1053_raw_1900.jpg)  
+![Caustics](dalle2023-10-07-01-56-26.jpg)  
+![Ice](dalle2023-10-07-ice01.jpg)  
+![Curd](dalle2023-10-12-22-58-42.jpg)  
