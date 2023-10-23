@@ -58,12 +58,12 @@ public class PredictiveEncoder
 {
   protected IPredictor Predictor;
 
-  protected EntropyCalculator Calculator;
+  protected IEntropyEncoder Encoder;
 
-  public PredictiveEncoder(IPredictor predictor, EntropyCalculator calculator)
+  public PredictiveEncoder(IPredictor predictor, IEntropyEncoder encoder)
   {
     Predictor = predictor;
-    Calculator = calculator;
+    Encoder   = encoder;
   }
 
   public void Init()
@@ -77,8 +77,8 @@ public class PredictiveEncoder
     int residuum = symbol - prediction;
     Predictor.Put(symbol);
 
-    // Process the residuum: update data for entropy computation...
-    Calculator.Put(residuum);
+    // Process the residuum: encode it using an encoder...
+    Encoder.Put(residuum);
   }
 
   /// <summary>
@@ -87,11 +87,43 @@ public class PredictiveEncoder
   /// <returns>Entropy in bits.</returns>
   public long Entropy()
   {
-    return Calculator.Entropy();
+    return Encoder.Entropy();
   }
 }
 
-public class EntropyCalculator
+/// <summary>
+/// General entropy encoder (input alphabet - integer codes).
+/// </summary>
+public interface IEntropyEncoder
+{
+  /// <summary>
+  /// Reset the encoder.
+  /// </summary>
+  void Init();
+
+  /// <summary>
+  /// Put next symbol into the encoder.
+  /// </summary>
+  /// <param name="value">Symbol code (values around zero are preferred).</param>
+  void Put(int value);
+
+  /// <summary>
+  /// Close the encoder - send all data in progress and close a data stream if necessary.
+  /// </summary>
+  void Close ();
+
+  /// <summary>
+  /// Total entropy of the message in bits.
+  /// Divide this number by "Total" for the average sample entropy.
+  /// </summary>
+  /// <returns>Entropy in bits or -1 if not implemented.</returns>
+  long Entropy ();
+}
+
+/// <summary>
+/// Special IEntropyEncoder class - doesn't encode anything, computes the total entropy instead.
+/// </summary>
+public class EntropyCalculator : IEntropyEncoder
 {
   /// <summary>
   /// Zig-zag encoding is used to process both positive and negative symbol codes...
@@ -126,10 +158,16 @@ public class EntropyCalculator
   }
 
   /// <summary>
+  /// Close the encoder - send all data in progress and close a data stream if necessary.
+  /// </summary>
+  public void Close()
+  {}
+
+  /// <summary>
   /// Total entropy of the message in bits.
   /// Divide this number by "Total" for the average sample entropy.
   /// </summary>
-  /// <returns>Entropy in bits.</returns>
+  /// <returns>Entropy in bits or -1 if not implemented.</returns>
   public long Entropy()
   {
     double entropy = 0.0;

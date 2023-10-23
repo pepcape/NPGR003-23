@@ -123,6 +123,13 @@ public abstract class DefaultPixelOrder : IPixelOrder
 }
 ```
 
+## Error messages
+The main program checks many things, you will get error message if
+* the required input file doesn't exist
+* the image is adressed outside of the `[0,0]-[width-1,height-1]` range
+* some pixel is processed for the second time during the `Pass()`
+* some pixels were omitted in the `Pass()`
+
 # Command line arguments
 Mandatory arguments:
 * `-i <filename>` - **input image file**
