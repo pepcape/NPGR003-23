@@ -43,6 +43,23 @@ internal class Program
         }
         int width  = image.Width;
         int height = image.Height;
+        bool dirty = false;   // don't report any more error messages, ignore the rest of the image...
+
+        // SFC checks.
+        HashSet<int> processed = new();
+
+        // Duplicity check function.
+        bool checkPixel(int x, int y)
+        {
+          int index = y * width + x;
+          if (processed.Contains(index))
+          {
+            Console.WriteLine($"Duplicate image access [{x},{y}].");
+            return dirty = true;
+          }
+          processed.Add(index);
+          return false;
+        }
 
         // We can proceed (image, width, height are valid).
 
@@ -59,14 +76,22 @@ internal class Program
         PredictiveEncoder encoder = new(predictor, entropyCalculator);
 
         // What to do with the individual pixel?
-        Action<int, int> pixelAction = (x, y) =>
+        void pixelAction(int x, int y)
         {
+          if (dirty)
+            return;
+
           if (x < 0 || x >= width ||
               y < 0 || y >= height)
           {
-            Console.WriteLine($"Invalid image access[{x},{y}].");
+            Console.WriteLine($"Invalid image access [{x},{y}].");
+            dirty = true;
             return;
           }
+
+          // Duplicity check.
+          if (checkPixel(x, y))
+            return;
 
           var pixel = image[x, y];
 
@@ -76,7 +101,7 @@ internal class Program
 
           // Pass the value to the encoder.
           encoder.Put(gray);
-        };
+        }
 
         // Pixel order method.
         IPixelOrder sfc;
@@ -94,6 +119,14 @@ internal class Program
 
         // Pass the image.
         sfc.Pass(width, height);
+
+        if (dirty) return;
+
+        if (processed.Count != width * height)
+        {
+          Console.WriteLine($"Not all pixels were passed ({processed.Count} < {width} x {height}).");
+          return;
+        }
 
         // Compute and print the entropy.
         long entropy = entropyCalculator.Entropy();
