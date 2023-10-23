@@ -57,8 +57,8 @@ The pilot implementation uses only the **luminance channel (grayscale)** and con
 input image to grayscale if it is colored. You should include options to analyze the
 R, G, or B color channels separately.
 
-The **`interface PixelOrder`** is used to traverse the pixels of a 2D raster image. A single class,
-`class Scanline`, implementing this interface is available in the pilot. Your task will be
+The **`interface IPixelOrder`** is used to traverse the pixels of a 2D raster image. A single class,
+`class ScanLine`, implementing this interface is available in the pilot. Your task will be
 to program as many (reasonable) alternatives as possible and test them on real data.
 You can preferably use an AI assistant to find these alternatives and even have the
 C# code generated.
@@ -77,7 +77,7 @@ The command line argument defining the input file should remain `-i <filename>`.
 example of the default scanline order used on input file `masa512g.png` is:
 ```bash
 > 03-sfc.exe -i masa512g.png -m 0
-354219
+1344753
 ```
 
 If you do an **efficiency analysis** on a set of input images (you'll find some at the bottom
@@ -85,16 +85,54 @@ of this page), we'll be happy and you'll get extra points.
 However, you must present the results in a clear form (spreadsheet or graphs) and preferably
 include your notes and observations.
 
+## Interface `IPixelOrder`
+Abstract API of the pixel ordering methods.
+
+```csharp
+public interface IPixelOrder
+{
+  /// <summary>
+  /// Passes all pixels from the rectangle [0,0]-[width-1,height-1]
+  /// </summary>
+  /// <param name="width">Rectangle width.</param>
+  /// <param name="height">Rectangle height.</param>
+  void Pass(int width, int height);
+}
+```
+## Support class `DefaultPixelOrder`
+This class was created for your convenience: when you inherit from it,
+all you need to do is declare a trivial constructor that passes the
+`PixelAction = Action<int, int>` to the base class. And of course
+you have to implement the `Pass(int width, int height)` function.
+
+```csharp
+public abstract class DefaultPixelOrder : IPixelOrder
+{
+  /// <summary>
+  /// Function called for every pixel.
+  /// </summary>
+  protected PixelAction Callback;
+
+  /// <summary>
+  /// Constructors will be used for callback function definitions.
+  /// </summary>
+  /// <param name="callback">Callback function.</param>
+  protected DefaultPixelOrder(PixelAction callback) => Callback = callback;
+
+  ...
+}
+```
+
 # Command line arguments
 Mandatory arguments:
 * `-i <filename>` - **input image file**
 * `-m <method>` - **pixel order method**, `0` is for default scanline order, use **positive
   integers** for your methods. Your favorite method should be encoded as `-m -1`
-* `-p <order>` - **order of the predictor**. Default is `0`, you don't need to change that,
+* `-p <order>` - **order of the predictor**. Default is `1`, you don't need to change that,
   unless you are experimenting with higher predictors. You must accept the argument anyway.
 
 Optional arguments:
-* human-readable alternative of the `-m`
+* human-readable alternative of the `-m` option
 * **color channel selector** - if present, the analysis will be applied to the selected channel
   (R, G, or B) only. If not present (**=default**), image pixels are converted to grayscale
   before processing.
@@ -119,12 +157,13 @@ See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5
 # Credit points
 **Basic solution: 8 points**
 * must not crash under any circumstances
-* must use the `interface PixelOrder` and the `-i`, `-m` and `-p` arguments described earlier
+* must use the `interface IPixelOrder` and the `-i`, `-m` and `-p` arguments described earlier
 * at least four additional pixel orderings
 * measure their efficiency and select your favorite method as `-m -1`
 
 **Bonus points: up to 7 more points**
 * more pixel orderings
+* separate R, G, B channel processing (one color channel at a time)
 * spreadsheet or graph-based efficiency analysis; interesting observations pointed out
   in the report are appreciated.
 * experiments with different predictor orders (0 is trivial, second-order predictor might be
