@@ -2,26 +2,26 @@
 Your task is to implement **Mandala-like** drawing algorithms. You should write a command line
 program that draws mandalas without user interaction and saves them to a disk file.
 
-Our **definition of a mandala**: an image with distinct circular symmetry. The order of
+Our **definition of a mandala**: an image with distinct **circular symmetry**. The order of
 symmetry is usually 5 to 8, giving angles of 72 to 45 degrees.
 Of course, you can use multiple symmetry, which can be seen in
 Asian mandalas as well.
 
 ## Ideas
-You can draw pixel by pixel or use drawing routines from the
+You can draw pixel by pixel or use **drawing routines** from the
 [ImageSharp library](https://www.nuget.org/packages/SixLabors.ImageSharp/).
 If you draw the same "batch" of figures several times with different
 rotation around the center of the image, you almost have it (you will probably have to fix
 the overlap of the 1st and the last batch).
 
-The second idea is to create an "image function" that includes rotational
+The second idea is to create an **"image function"** that includes rotational
 symmetry in its definition. A small example: let us calculate
 the closest distance from the current pixel to one of the four lines
 (vertical `x = 0`, horizontal `y = 0`, diagonal `y = x` and side diagonal
 `y = -x`). The color of the current pixel is then based on the closest distance,
 it is obvious that the result will have 8-fold rotational symmetry.
 
-Using the distance of the current pixel to a set of pixels that can
+Using the distance of the current pixel to a set of points/lines that can
 already be easily made rotationally symmetric is a generally
 applicable idea.
 
@@ -61,12 +61,14 @@ See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5
 * all generated images must be circular symmetric to resemble a mandala
 * image size in pixels via arguments
 * output filename specified in an argument
+* documentation in the `README.md` file (including definition of all command
+  line arguments)
 
 **Bonus points: up to 9 more points**
 * acceptance of rectangular (`Width != Height`) image aspect ratios
 * invention
 * visual appeal
-* strong parametrization and/or more (switchable) ideas in yur solution
+* strong parametrization and/or more (switchable) ideas in your solution
 
 ## Use of AI assistant
 Using an AI assistant in this role will be difficult. Sure, you can use

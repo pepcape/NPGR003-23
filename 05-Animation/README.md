@@ -31,7 +31,7 @@ We recommend the command-line program
 with many of options and able to use many popular video and audio codecs
 (actually there is a static-linked version of the utility with all the codecs included).
 A binary package for Windows is available
-from this page.
+[from this page](https://ffmpeg.org/download.html).
 By executing a single line command you will be able to encode a video file
 from a sequence of raster images.
 
