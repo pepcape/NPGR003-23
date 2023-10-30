@@ -19,7 +19,9 @@ symmetry in its definition. A small example: let us calculate
 the closest distance from the current pixel to one of the four lines
 (vertical `x = 0`, horizontal `y = 0`, diagonal `y = x` and side diagonal
 `y = -x`). The color of the current pixel is then based on the closest distance,
-it is obvious that the result will have 8-fold rotational symmetry.
+it is obvious that the result will have 8-fold rotational symmetry. For
+various distance formulas, see
+[this page by Dave Eberly](https://www.geometrictools.com/Documentation/Documentation.html).
 
 Using the distance of the current pixel to a set of points/lines that can
 already be easily made rotationally symmetric is a generally
