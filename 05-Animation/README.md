@@ -12,12 +12,14 @@ on disk, that will eventually be encoded as a video file.
 We won't accept mandala animations based only on color changes, a non-trivial
 shape metamorphosis/transition must be involved!
 
+You may find the [page on easing functions](https://easings.net/) useful.
+
 # Pilot project
 There is a VS pilot project that shows how to create a sequence of PNG
 images. All output images are stored in the `anim` subdirectory,
 where you will find a batch `encode.bat` for your convenience.
 
-Please consider the pilot project only as a demonstration of how to use
+Please consider the pilot project as a demonstration of how to use
 the `string.Format()` function to format the filenames of individual frames.
 
 # Your solution
