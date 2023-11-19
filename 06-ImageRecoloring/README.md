@@ -10,6 +10,25 @@ to the desired parameters. Simple "Hue shift" would be sufficient.
 Try AI or Google to get ideas about skin tone detection (Google "skin color detection hsv"
 or "skin tone detection").
 
+### RGB <-> HSV conversion in `SixLabors.ImageSharp`
+A short snippet shows how to convert colors from `Rgba32` to `Rgb`, `Hsv` and back:
+```csharp
+using SixLabors.ImageSharp.ColorSpaces.Conversion;
+using SixLabors.ImageSharp.ColorSpaces;
+
+  ...
+  Rgba32 inputColor = new(0xFF, 0x80, 0xA8);
+  Rgb inputRgb = new(inputColor.R, inputColor.G, inputColor.B);
+  Hsv inputHsv = ColorSpaceConverter.ToHsv(inputRgb);
+
+  // Now we can play with inputHsv.
+  float deltaH = 30.0f;
+  Hsv outputHsv = new(inputHsv.H + deltaH, inputHsv.S, inputHsv.V);
+
+  Rgb outputRgb = ColorSpaceConverter.ToRgb(outputHsv);
+  Rgba32 outputColor = new(outputRgb.R, outputRgb.G, outputRgb.B);
+```
+
 # Command line arguments
 * `-i <input>` - to specify the input image
 * `-o <output>` - to specify the output image (it will have the same pixel resolution)
