@@ -81,18 +81,15 @@ have been altered by hue changes (Photos copyright by David Marek).
 
 [![01-beard](_01-beard.jpg)](01-beard.jpg)
 [![02-disk](_02-disk.jpg)](02-disk.jpg)
-
 [![03-bicycle](_03-bicycle.jpg)](03-bicycle.jpg)
 [![04-theater](_04-theater.jpg)](04-theater.jpg)
 
 [![05-face](_05-face.jpg)](05-face.jpg)
 [![06-selfie](_06-selfie.jpg)](06-selfie.jpg)
-
 [![07-laugh](_07-laugh.jpg)](07-laugh.jpg)
 [![08-girl](_08-girl.jpg)](08-girl.jpg)
 
 [![09-egsr](_09-egsr.jpg)](09-egsr.jpg)
 [![10-hat](_10-hat.jpg)](10-hat.jpg)
-
 [![11-bara](_11-bara.jpg)](11-bara.jpg)
 [![12-photographer](_12-photographer.jpg)](12-photographer.jpg)
