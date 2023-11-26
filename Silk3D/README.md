@@ -11,11 +11,11 @@ The library [Silk.NET](https://github.com/dotnet/Silk.NET/tree/main)
 This directory contains source files independent of specific project.
 The main purpose is your convenience.
 * `BufferObject.cs` - wrapper for general server-side buffer object
-* `Shader.cs` - wrapper for the shader-program
+* `Shader.cs` - wrapper for the shader-program (minimum: vertex shader, fragment shader)
 * `Texture.cs` - wrapper for texture (can be read from a disk file using the
   `SixLabors.ImageSharp` library)
 * `Trackball.cs` - interactive 3D scene rotation tool
-* `VertexArrayObject.cs` - wrapper for the VAO
+* `VertexArrayObject.cs` - wrapper for the VAO (vertex buffer + index buffer)
 
 ## Sample projects
 [01-FlatWorld](01-FlatWorld/README.md) - simple 2D object on the plane. Elementary

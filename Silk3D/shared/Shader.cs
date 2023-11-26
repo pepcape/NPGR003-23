@@ -1,6 +1,4 @@
 using System;
-using System.IO;
-//using System.Numerics;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 
