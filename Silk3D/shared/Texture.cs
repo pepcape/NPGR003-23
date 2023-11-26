@@ -1,14 +1,13 @@
 using System;
 using System.Numerics;
 using Silk.NET.OpenGL;
-using SilkHDR;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
 // ReSharper disable AssignNullToNotNullAttribute
 
 namespace Util;
 
-public class Texture : DefaultConfigSection, IDisposable
+public class Texture : IDisposable
 {
 	// OpenGL binding.
 	protected uint _handle = uint.MaxValue;
@@ -112,32 +111,9 @@ public class Texture : DefaultConfigSection, IDisposable
 			// Texture read from a disk file.
 			Width = Height = 0;
 
-			if (fileName.ToLower().EndsWith(".hdr"))
-			{
-				// Loading a HDR image using FloatImage.
-				// PFM and Radiance HDR formats should be implemented.
-				FloatImage? fi = FloatImage.FromFile(fileName);
-				if (fi == null)
-					throw new Exception($"Invalid HDR file {fileName}");
-
-				Width = fi.Width;
-				Height = fi.Height;
-
-				fixed (float* d = fi.Data)
-				{
-					// Setting the data of a texture.
-					gl.TexImage2D(
-						TextureTarget.Texture2D, 0,
-						(int)InternalFormat.Rgb16f,
-						(uint)fi.Width, (uint)fi.Height, 0,
-						PixelFormat.Rgb,
-						PixelType.Float,
-						d);
-				}
-
-				descr = "hdr";
-			}
-			else
+			if (fileName.ToLower().EndsWith(".png") ||
+          fileName.ToLower().EndsWith(".jpg") ||
+          fileName.ToLower().EndsWith(".bmp"))
 			{
 				// Loading a LDR image using ImageSharp.
 				using (var img = Image.Load<Rgba32>(fileName))
@@ -241,55 +217,5 @@ public class Texture : DefaultConfigSection, IDisposable
 		// In order to dispose we need to delete the OpenGL handle for the texure.
 		_gl?.DeleteTexture(_handle);
 		_handle = uint.MaxValue;
-	}
-
-	// ConfigSection
-
-	/// <summary>
-	/// Pre-processing of the section.
-	/// </summary>
-	/// <param name="line">The config line which initiated the object read.</param>
-	/// <param name="provider">Superior object which is in charge of reading the config...</param>
-	/// <returns>Itself or a proxy-reader.</returns>
-	public override IConfigSection Prologue(string line, Options? provider)
-	{
-		name = string.Empty;
-
-		if (provider is SilkOptions)
-			SilkOptions.images.Add(name, this);
-
-		return this;
-	}
-
-	/// <summary>
-	/// Parse a key-value pair.
-	/// </summary>
-	/// <param name="key">Key string (non-empty, trimmed).</param>
-	/// <param name="value">Value string (non-null, trimmed).</param>
-	/// <param name="line">Raw line.</param>
-	/// <param name="finished">Set to true if the object was completed.</param>
-	/// <returns>True if recognized.</returns>
-	public override bool HandleKeyValue(string key, string value, string line, out bool finished)
-	{
-		finished = false;
-
-		switch (key)
-		{
-			case "name":
-				// name = <string>
-				SilkOptions.images.Remove(name);
-				name = Options.UnwrapString(value);
-				SilkOptions.images[name] = this;
-				SilkOptions.currentImageName = name;
-				return true;
-
-			case "file":
-				// file = <string>
-				fileName = Options.UnwrapString(value);
-				descr = fileName;
-				return true;
-		}
-
-		return false;
 	}
 }
