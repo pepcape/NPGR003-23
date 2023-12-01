@@ -397,6 +397,17 @@ internal class Program
         DeleteObject();
         break;
 
+      case Key.F1:
+        // Help.
+        Util.Util.Message("+           new current object", true);
+        Util.Util.Message("-           delete current object", true);
+        Util.Util.Message("Home        reset current object", true);
+        Util.Util.Message("F1          print help", true);
+        Util.Util.Message("Esc         quit the program", true);
+        Util.Util.Message("Mouse.left  drag current object", true);
+        Util.Util.Message("Mouse.wheel rotate current object", true);
+        break;
+
       case Key.Escape:
         // Close the application.
         window?.Close();
