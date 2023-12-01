@@ -5,7 +5,6 @@ using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
-using System.Numerics;
 using Util;
 // ReSharper disable InconsistentNaming
 // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -30,17 +29,19 @@ public class Options
 /// <summary>
 /// Single object = sequence of primitives of the same type (point, line, triangle).
 /// </summary>
-struct Object
+class Object
 {
+  public Object() => Reset();
+
   /// <summary>
   /// Buffer id. Not used here as we have only one shared buffer.
   /// </summary>
   public uint BufferId { get; set; }
 
-  public PrimitiveType Type { get; set; }
+  public PrimitiveType Type { get; set; } = PrimitiveType.Triangles;
 
   /// <summary>
-  /// Start of the object in the buffer (in indices).
+  /// Start of the object in the index buffer (in indices).
   /// </summary>
   public int BufferOffset { get; set; }
 
@@ -52,12 +53,18 @@ struct Object
   /// <summary>
   /// World space coordinates of the object's center.
   /// </summary>
-  public Vector3 Center { get; set; }
+  public Vector3 Center { get; private set; }
 
   /// <summary>
   /// Object-to-world (local-to-world) transformation.
   /// </summary>
-  public Matrix4 ModelTransform { get; set; }
+  public Matrix4 ModelTransform { get; private set; }
+
+  public void Reset()
+  {
+    Center = Vector3.Zero;
+    ModelTransform = Matrix4.Identity;
+  }
 
   public void Translate(Vector3 t)
   {
@@ -73,7 +80,7 @@ struct Object
   public void Rotate(float angle)
   {
     Matrix4 rotation = Matrix4X4.CreateRotationZ(angle);
-    ModelTransform = Matrix4X4.CreateTranslation(Center) * rotation * Matrix4X4.CreateTranslation(-Center) * ModelTransform;
+    ModelTransform *= Matrix4X4.CreateTranslation(-Center) * rotation * Matrix4X4.CreateTranslation(Center);
   }
 }
 
@@ -107,12 +114,47 @@ internal class Program
   // 2D objects - referring to the shared buffer.
   private static List<Object> Objects = new();
 
+  private static Object LastObject => Objects[^1];
+
+  /// <summary>
+  /// Adds a new object (pristine copy of the 1st one).
+  /// </summary>
+  private static void NewObject()
+  {
+    Objects.Add(new()
+    {
+      BufferId = 0,
+      Type = PrimitiveType.Triangles,
+      BufferOffset = Objects[0].BufferOffset,
+      Indices = Objects[0].Indices
+    });
+    SetWindowTitle();
+  }
+
+  /// <summary>
+  /// Removes the youngest object (until it is the 1st one).
+  /// </summary>
+  private static void DeleteObject ()
+  {
+    if (Objects.Count > 1)
+    {
+      Objects.RemoveAt(Objects.Count - 1);
+      SetWindowTitle();
+    }
+  }
+
   //////////////////////////////////////////////////////
   // Application.
 
   private static string WindowTitle()
   {
     return $"01-FlatWorld - {Objects.Count} objects";
+  }
+
+  private static void SetWindowTitle()
+  {
+    if (window != null)
+      window.Title = WindowTitle();
   }
 
   private static void Main(string[] args)
@@ -149,6 +191,7 @@ internal class Program
   {
     Debug.Assert(window != null);
 
+    // Initialize all the inputs (keyboard + mouse).
     IInputContext input = window.CreateInput();
     for (int i = 0; i < input.Keyboards.Count; i++)
     {
@@ -164,6 +207,7 @@ internal class Program
       input.Mice[i].Scroll      += MouseScroll;
     }
 
+    // OpenGL global reference (shortcut).
     Gl = GL.GetApi(window);
 
     //------------------------------------------------------
@@ -173,33 +217,35 @@ internal class Program
     vertexBuffer.AddRange(new[]
     {
     //  x,     y,     z,     R,     G,     B
-      -0.5f, -0.4f,  0.0f,  1.0f,  0.2f,  0.2f,
-       0.5f, -0.4f,  0.0f,  0.1f,  1.0f,  0.1f,
-       0.0f,  0.4f,  0.0f,  0.3f,  0.3f,  1.0f,
+      -0.5f, -0.3f,  0.0f,  1.0f,  0.2f,  0.2f,
+       0.5f, -0.3f,  0.0f,  0.1f,  1.0f,  0.1f,
+       0.0f,  0.6f,  0.0f,  0.3f,  0.3f,  1.0f,
     });
     indexBuffer.AddRange(new uint[]
     {
       0, 1, 2,
     });
+
+    // Create the first object (the rest will be cloned from it).
     Objects.Add(new()
     {
       BufferId = 0,
       Type = PrimitiveType.Triangles,
       BufferOffset = 0,
-      Indices = 3,
-      Center = new(0.0f, 0.0f, 0.0f),
-      ModelTransform = Matrix4.Identity
+      Indices = 3
     });
 
+    // Vertex Array Object = Vertex buffer + Index buffer.
     Ebo = new BufferObject<uint>(Gl, indexBuffer.ToArray(), BufferTargetARB.ElementArrayBuffer);
     Vbo = new BufferObject<float>(Gl, vertexBuffer.ToArray(), BufferTargetARB.ArrayBuffer);
     Vao = new VertexArrayObject<float, uint>(Gl, Vbo, Ebo);
     VaoPointers();
 
+    // Initialize the shaders.
     ShaderPrg = new ShaderProgram(Gl, "shader.vert", "shader.frag");
 
     // Main window.
-    window.Title = WindowTitle();
+    SetWindowTitle();
     SetupViewport();
   }
 
@@ -214,6 +260,18 @@ internal class Program
   /// Call SetupVieport() function to update it.
   /// </summary>
   static Matrix4 projectionMatrix;
+
+  /// <summary>
+  /// Mouse horizontal scaling coefficient.
+  /// One unit/pixel of mouse movement corresponds to this distance in world space.
+  /// </summary>
+  private static float mouseCx =  0.001f;
+
+  /// <summary>
+  /// Mouse vertical scaling coefficient.
+  /// Vertical scaling is just negative value of horizontal one.
+  /// </summary>
+  private static float mouseCy = -0.001f;
 
   /// <summary>
   /// Does all necessary steps after window setup/resize.
@@ -231,6 +289,11 @@ internal class Program
     // 'sceneDiameter' should be set properly.
     float minSize = 2.0f * Math.Min(width, height);
     projectionMatrix = Matrix4X4.CreateOrthographic(sceneDiameter * width / minSize, sceneDiameter * height / minSize, 0.1f, 10.0f);
+
+    // The tight coordinate is used for mouse scaling.
+    mouseCx = sceneDiameter / minSize;
+    // Vertical mouse scaling is just negative...
+    mouseCy = -mouseCx;
   }
 
   /// <summary>
@@ -239,7 +302,7 @@ internal class Program
   /// <param name="newSize">New window size in pixels.</param>
   private static void OnResize(Vector2D<int> newSize)
   {
-    width = newSize[0];
+    width  = newSize[0];
     height = newSize[1];
     SetupViewport();
   }
@@ -259,7 +322,7 @@ internal class Program
     VaoPointers();
     ShaderPrg.Use();
 
-    // Common shader uniforms.
+    // Shared shader uniforms.
     ShaderPrg.TrySetUniform("view", viewMatrix);
     ShaderPrg.TrySetUniform("projection", projectionMatrix);
 
@@ -274,6 +337,9 @@ internal class Program
     }
   }
 
+  /// <summary>
+  /// Handler for window close event.
+  /// </summary>
   private static void OnClose()
   {
     Vao?.Dispose();
@@ -283,10 +349,22 @@ internal class Program
     //DisposeTextures();
   }
 
+  /// <summary>
+  /// Shift counter (0 = no shift pressed).
+  /// </summary>
   private static int shiftDown = 0;
 
+  /// <summary>
+  /// Ctrl counter (0 = no ctrl pressed).
+  /// </summary>
   private static int ctrlDown = 0;
 
+  /// <summary>
+  /// Handler function for keyboard key up.
+  /// </summary>
+  /// <param name="arg1">Keyboard object.</param>
+  /// <param name="arg2">Key identification.</param>
+  /// <param name="arg3">Key scancode.</param>
   private static void KeyDown(IKeyboard arg1, Key arg2, int arg3)
   {
     switch (arg2)
@@ -301,42 +379,37 @@ internal class Program
         ctrlDown++;
         break;
 
-      /*
-      case Key.Up:
-        break;
-
-      case Key.Down:
-        break;
-
-      case Key.Left:
-        break;
-
-      case Key.Right:
-        break;
-
       case Key.Home:
-        break;
-
-      case Key.F:
-        break;
-
-      case Key.S:
-        if (ctrlDown > 0)
+        // Reset object transformation.
+        if (Objects.Count > 0)
         {
-          // Ctrl+S.
+          LastObject.Reset();
         }
         break;
 
-      case Key.F5:
+      case Key.KeypadAdd:
+        // Add a new object.
+        NewObject();
         break;
-      */
+
+      case Key.KeypadSubtract:
+        // Delete the last object.
+        DeleteObject();
+        break;
 
       case Key.Escape:
+        // Close the application.
         window?.Close();
         break;
     }
   }
 
+  /// <summary>
+  /// Handler function for keyboard key up.
+  /// </summary>
+  /// <param name="arg1">Keyboard object.</param>
+  /// <param name="arg2">Key identification.</param>
+  /// <param name="arg3">Key scancode.</param>
   private static void KeyUp(IKeyboard arg1, Key arg2, int arg3)
   {
     switch (arg2)
@@ -353,28 +426,92 @@ internal class Program
     }
   }
 
+  /// <summary>
+  /// Mouse dragging - current X coordinate in pixels.
+  /// </summary>
+  private static float currentX = 0.0f;
+
+  /// <summary>
+  /// Mouse dragging - current Y coordinate in pixels.
+  /// </summary>
+  private static float currentY = 0.0f;
+
+  /// <summary>
+  /// True if dragging mode is active.
+  /// </summary>
+  private static bool dragging = false;
+
+  /// <summary>
+  /// Handler function for mouse button down.
+  /// </summary>
+  /// <param name="mouse">Mouse object.</param>
+  /// <param name="btn">Button identification.</param>
   private static void MouseDown(IMouse mouse, MouseButton btn)
   {
     if (btn == MouseButton.Left)
     {
       Util.Util.MessageInvariant($"Left button down: {mouse.Position}");
+
+      // Start dragging.
+      dragging = true;
+      currentX = mouse.Position.X;
+      currentY = mouse.Position.Y;
     }
   }
 
+  /// <summary>
+  /// Handler function for mouse button up.
+  /// </summary>
+  /// <param name="mouse">Mouse object.</param>
+  /// <param name="btn">Button identification.</param>
   private static void MouseUp(IMouse mouse, MouseButton btn)
   {
     if (btn == MouseButton.Left)
     {
       Util.Util.MessageInvariant($"Left button up: {mouse.Position}");
+
+      // Stop dragging.
+      dragging = false;
     }
   }
 
+  /// <summary>
+  /// Handler function for mouse move.
+  /// </summary>
+  /// <param name="mouse">Mouse object.</param>
+  /// <param name="xy">New mouse position in pixels.</param>
   private static void MouseMove(IMouse mouse, System.Numerics.Vector2 xy)
   {
     if (mouse.IsButtonPressed(MouseButton.Left))
+    {
       Util.Util.MessageInvariant($"Mouse drag: {xy}");
+    }
+
+    // Object dragging.
+    if (dragging)
+    {
+      float newX = mouse.Position.X;
+      float newY = mouse.Position.Y;
+
+      if (newX != currentX || newY != currentY)
+      {
+        if (Objects.Count > 0)
+        {
+          LastObject.Translate(new((newX - currentX) * mouseCx, (newY - currentY) * mouseCy, 0.0f));
+        }
+
+        currentX = newX;
+        currentY = newY;
+      }
+    }
   }
 
+  /// <summary>
+  /// Handler function for mouse button double click.
+  /// </summary>
+  /// <param name="mouse">Mouse object.</param>
+  /// <param name="btn">Button identification.</param>
+  /// <param name="xy">Double click position in pixels.</param>
   private static void MouseDoubleClick(IMouse mouse, MouseButton btn, System.Numerics.Vector2 xy)
   {
     if (btn == MouseButton.Left)
@@ -384,6 +521,11 @@ internal class Program
     }
   }
 
+  /// <summary>
+  /// Handler function for mouse wheel rotation.
+  /// </summary>
+  /// <param name="mouse">Mouse object.</param>
+  /// <param name="btn">Mouse wheel object (Y coordinate is used here).</param>
   private static void MouseScroll(IMouse mouse, ScrollWheel wheel)
   {
     // wheel.Y is -1 or 1
@@ -391,7 +533,7 @@ internal class Program
 
     if (Objects.Count > 0)
     {
-      Objects[0].Rotate(wheel.Y * 0.1f);
+      LastObject.Rotate(wheel.Y * 0.1f);
     }
   }
 }
