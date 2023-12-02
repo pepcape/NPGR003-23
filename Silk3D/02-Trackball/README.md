@@ -1,19 +1,7 @@
-# `01-FlatWorld`
-You can place 2D objects (triangles) on the plane. Elementary
-interaction using keyboard & mouse, matrix transformations.
-
-The last object (= current object) can be moved and rotated using mouse.
+# `02-Trackball`
+3D cube is examined using mouse in the "trackball" mode.
 
 ## Keyboard
-**+**
-Adds a new object.
-
-**-**
-Deletes the current object (unless it is the only one).
-
-**Home**
-Resets transformation of the current object.
-
 **Esc**
 Quits the application.
 
@@ -22,10 +10,10 @@ Help is printed to the console window.
 
 ## Mouse
 **Left button**
-Dragging (translation) of the current object.
+Rotating of the object in front of the viewer. Trackball mode is implemented.
 
 **Wheel**
-Rotation of the current object.
+Scale of the current object.
 
 # Notes
 * matrix transformations
@@ -37,4 +25,4 @@ Rotation of the current object.
   - **vertex shader** - performs "model-view-transform"
   - **fragment shader** - assigns color interpolated from vertices, no textures are used
 * **window resize** handling
-  - the defined scene region (diameter = 4) is always displayed
+  - the defined scene region (diameter = 2) is always displayed

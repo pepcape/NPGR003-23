@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "02-Texture": {
+      "commandName": "Project",
+      "workingDirectory": "$(ProjectDir)"
+    }
+  }
+}

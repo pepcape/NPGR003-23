@@ -1,8 +1,6 @@
 ﻿using System;
-using Silk.NET.GLFW;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-using Silk.NET.OpenGL;
 
 using Vector2 = Silk.NET.Maths.Vector2D<float>;
 using Vector3 = Silk.NET.Maths.Vector3D<float>;
@@ -10,6 +8,7 @@ using Vector3d = Silk.NET.Maths.Vector3D<double>;
 using Matrix4 = Silk.NET.Maths.Matrix4X4<float>;
 using MouseButton = Silk.NET.Input.MouseButton;
 // ReSharper disable InconsistentNaming
+// ReSharper disable VirtualMemberCallInConstructor
 
 namespace Util;
 
@@ -374,7 +373,7 @@ public class Trackball : DefaultDynamicCamera
     }
   }
 
-  private readonly Vector3 absoluteUp = new Vector3(0, 1, 0);
+  private readonly Vector3 absoluteUp = Vector3.UnitY;
 
   /// <summary>
   /// Camera RIGHT vector - not rotated (parallel to world axes)
@@ -410,7 +409,7 @@ public class Trackball : DefaultDynamicCamera
   private Matrix4 prevRotation = Matrix4.Identity;
   private Matrix4 rotation     = Matrix4.Identity;
 
-  private Ellipse  ellipse;
+  private Ellipse? ellipse;
   private Vector3? a, b;
 
   private Matrix4 perspectiveProjection;
@@ -572,7 +571,7 @@ public class Trackball : DefaultDynamicCamera
   /// <returns>True if handled.</returns>
   public override bool MouseDown (IMouse mouse, MouseButton button)
   {
-    if (button != Button)
+    if (ellipse == null || button != Button)
       return false;
 
     currentButton = button;
@@ -605,7 +604,7 @@ public class Trackball : DefaultDynamicCamera
   {
     current = position;
 
-    if (currentButton != Button)
+    if (ellipse == null || currentButton != Button)
       return false;
 
     b = ellipse.IntersectionI(current.X, current.Y);
