@@ -5,6 +5,8 @@ using Silk.NET.Input;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
+using System.Globalization;
+using System.Text;
 using Util;
 // ReSharper disable InconsistentNaming
 // ReSharper disable FieldCanBeMadeReadOnly.Local
@@ -158,7 +160,19 @@ internal class Program
 
   private static string WindowTitle()
   {
-    return $"02-Trackball - {Objects.Count} objects";
+    StringBuilder sb = new("02-Trackball");
+    if (tb != null)
+    {
+      sb.Append(tb.UsePerspective ? ", perspective" : ", orthographic");
+      sb.Append(string.Format(CultureInfo.InvariantCulture, ", zoom={0:f2}", tb.Zoom));
+    }
+    if (useTexture &&
+        texture != null &&
+        texture.IsValid())
+      sb.Append($", txt={texture.name}");
+    else
+      sb.Append(", no texture");
+    return sb.ToString();
   }
 
   private static void SetWindowTitle()
@@ -421,7 +435,10 @@ internal class Program
   {
     if (tb != null &&
         tb.KeyDown(arg1, arg2, arg3))
+    {
+      SetWindowTitle();
       return;
+    }
 
     switch (arg2)
     {
@@ -450,6 +467,7 @@ internal class Program
           Util.Util.Message($"Texture: {texture?.name}");
         else
           Util.Util.Message("Texturing off");
+        SetWindowTitle();
         break;
 
       case Key.P:
@@ -457,7 +475,7 @@ internal class Program
         if (tb != null)
         {
           tb.UsePerspective = !tb.UsePerspective;
-          Util.Util.Message(tb.UsePerspective ? "Perspective projection" : "Orthographic projection");
+          SetWindowTitle();
         }
         break;
 
@@ -641,7 +659,10 @@ internal class Program
   private static void MouseScroll(IMouse mouse, ScrollWheel wheel)
   {
     if (tb != null)
+    {
       tb.MouseWheel(mouse, wheel);
+      SetWindowTitle();
+    }
 
     // wheel.Y is -1 or 1
     Util.Util.MessageInvariant($"Mouse scroll: {wheel.Y}");
