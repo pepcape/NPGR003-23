@@ -2,7 +2,7 @@
   "profiles": {
     "02-Texture": {
       "commandName": "Project",
-      "commandLineArgs": "-t :test:",
+      "commandLineArgs": "-t logo340x340w.png",
       "workingDirectory": "$(ProjectDir)"
     }
   }

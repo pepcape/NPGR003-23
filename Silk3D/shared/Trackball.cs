@@ -6,7 +6,6 @@ using Silk.NET.Maths;
 
 namespace Util;
 
-using Vector2 = Vector2D<float>;
 using Vector3 = Vector3D<float>;
 using Vector3d = Vector3D<double>;
 using Matrix4 = Matrix4X4<float>;
@@ -442,10 +441,10 @@ public class Trackball : DefaultDynamicCamera
     }
 
     // 2b. orthographic
-    float minSize = 2.0f * Math.Min(width, height);
+    float minSize = Math.Min(width, height);
     orthographicProjection = Matrix4X4.CreateOrthographic(
-      Diameter * width / minSize,
-      Diameter * height / minSize,
+      width / minSize,    // the rest of the scaling is done in View (Zoom / Diameter)
+      height / minSize,
       near, far);
     setEllipse(width, height);
   }

@@ -11,10 +11,7 @@ using Util;
 
 namespace _02_Trackball;
 
-using Vector2 = Vector2D<float>;
 using Vector3 = Vector3D<float>;
-using Vector4 = Vector4D<float>;
-using Matrix3 = Matrix3X3<float>;
 using Matrix4 = Matrix4X4<float>;
 
 public class Options
@@ -92,11 +89,15 @@ internal class Program
   private static IWindow? window;
   private static GL? Gl;
 
-  // Window size.
+  // Window.
   private static float width;
   private static float height;
 
-  // Scene size.
+  // Trackball.
+  private static Trackball? tb;
+
+  // Scene dimensions.
+  private static Vector3 sceneCenter = Vector3.Zero;
   private static float sceneDiameter = 4.0f;
 
   // Global 3D data buffer.
@@ -276,26 +277,17 @@ internal class Program
     }
     else
     {
-      texture = new(textureFile);
+      texture = new(textureFile, textureFile);
       texture.OpenglTextureFromFile(Gl);
     }
+
+    // Trackball.
+    tb = new(sceneCenter, sceneDiameter);
 
     // Main window.
     SetWindowTitle();
     SetupViewport();
   }
-
-  /// <summary>
-  /// Current view matrix.
-  /// Call SetupVieport() function to update it.
-  /// </summary>
-  static Matrix4 viewMatrix;
-
-  /// <summary>
-  /// Current projection matrix.
-  /// Call SetupVieport() function to update it.
-  /// </summary>
-  static Matrix4 projectionMatrix;
 
   /// <summary>
   /// Mouse horizontal scaling coefficient.
@@ -318,16 +310,18 @@ internal class Program
     // OpenGL viewport.
     Gl?.Viewport(0, 0, (uint)width, (uint)height);
 
-    // Put the whole scene in front of the camera.
-    viewMatrix = Matrix4X4.CreateTranslation(0.0f, 0.0f, -5.0f);
+    tb?.ViewportChange((int)width, (int)height, 0.05f, 20.0f);
 
-    // Projection matrix (orthographics projection).
+    // Put the whole scene in front of the camera.
+    //viewMatrix = Matrix4X4.CreateTranslation(0.0f, 0.0f, -5.0f);
+
+    // Projection matrix (orthographic projection).
     // 'sceneDiameter' should be set properly.
     float minSize = Math.Min(width, height);
-    projectionMatrix = Matrix4X4.CreateOrthographic(
-      sceneDiameter * width / minSize,
-      sceneDiameter * height / minSize,
-      0.1f, 20.0f);
+    //projectionMatrix = Matrix4X4.CreateOrthographic(
+    //  sceneDiameter * width / minSize,
+    //  sceneDiameter * height / minSize,
+    //  0.1f, 20.0f);
 
     // The tight coordinate is used for mouse scaling.
     mouseCx = sceneDiameter / minSize;
@@ -354,6 +348,7 @@ internal class Program
   {
     Debug.Assert(Gl != null);
     Debug.Assert(ShaderPrg != null);
+    Debug.Assert(tb != null);
 
     Gl.Clear((uint)ClearBufferMask.ColorBufferBit | (uint)ClearBufferMask.DepthBufferBit);
 
@@ -367,8 +362,10 @@ internal class Program
     ShaderPrg.Use();
 
     // Shared shader uniforms.
-    ShaderPrg.TrySetUniform("view", viewMatrix);
-    ShaderPrg.TrySetUniform("projection", projectionMatrix);
+    ShaderPrg.TrySetUniform("view", tb.View);
+    ShaderPrg.TrySetUniform("projection", tb.Projection);
+
+    // Texture.
     if (texture == null || !texture.IsValid())
       useTexture = false;
     ShaderPrg.TrySetUniform("useTexture", useTexture);
@@ -422,6 +419,10 @@ internal class Program
   /// <param name="arg3">Key scancode.</param>
   private static void KeyDown(IKeyboard arg1, Key arg2, int arg3)
   {
+    if (tb != null &&
+        tb.KeyDown(arg1, arg2, arg3))
+      return;
+
     switch (arg2)
     {
       case Key.ShiftLeft:
@@ -451,9 +452,43 @@ internal class Program
           Util.Util.Message("Texturing off");
         break;
 
+      case Key.P:
+        // Reset view.
+        if (tb != null)
+        {
+          tb.UsePerspective = !tb.UsePerspective;
+          Util.Util.Message(tb.UsePerspective ? "Perspective projection" : "Orthographic projection");
+        }
+        break;
+
+      case Key.C:
+        // Reset view.
+        if (tb != null)
+        {
+          tb.Reset();
+          Util.Util.Message("Camera reset");
+        }
+        break;
+
+      case Key.Left:
+        if (Objects.Count > 0)
+        {
+          LastObject.Rotate(-0.1f);
+        }
+        break;
+
+      case Key.Right:
+        if (Objects.Count > 0)
+        {
+          LastObject.Rotate(0.1f);
+        }
+        break;
+
       case Key.F1:
         // Help.
         Util.Util.Message("T           toggle texture", true);
+        Util.Util.Message("P           toggle perspective", true);
+        Util.Util.Message("C           camera reset", true);
         Util.Util.Message("Home        reset current object", true);
         Util.Util.Message("F1          print help", true);
         Util.Util.Message("Esc         quit the program", true);
@@ -476,6 +511,10 @@ internal class Program
   /// <param name="arg3">Key scancode.</param>
   private static void KeyUp(IKeyboard arg1, Key arg2, int arg3)
   {
+    if (tb != null &&
+        tb.KeyUp(arg1, arg2, arg3))
+      return;
+
     switch (arg2)
     {
       case Key.ShiftLeft:
@@ -512,9 +551,12 @@ internal class Program
   /// <param name="btn">Button identification.</param>
   private static void MouseDown(IMouse mouse, MouseButton btn)
   {
-    if (btn == MouseButton.Left)
+    if (tb != null)
+      tb.MouseDown(mouse, btn);
+
+    if (btn == MouseButton.Right)
     {
-      Util.Util.MessageInvariant($"Left button down: {mouse.Position}");
+      Util.Util.MessageInvariant($"Right button down: {mouse.Position}");
 
       // Start dragging.
       dragging = true;
@@ -530,9 +572,12 @@ internal class Program
   /// <param name="btn">Button identification.</param>
   private static void MouseUp(IMouse mouse, MouseButton btn)
   {
-    if (btn == MouseButton.Left)
+    if (tb != null)
+      tb.MouseUp(mouse, btn);
+
+    if (btn == MouseButton.Right)
     {
-      Util.Util.MessageInvariant($"Left button up: {mouse.Position}");
+      Util.Util.MessageInvariant($"Right button up: {mouse.Position}");
 
       // Stop dragging.
       dragging = false;
@@ -546,7 +591,10 @@ internal class Program
   /// <param name="xy">New mouse position in pixels.</param>
   private static void MouseMove(IMouse mouse, System.Numerics.Vector2 xy)
   {
-    if (mouse.IsButtonPressed(MouseButton.Left))
+    if (tb != null)
+      tb.MouseMove(mouse, xy);
+
+    if (mouse.IsButtonPressed(MouseButton.Right))
     {
       Util.Util.MessageInvariant($"Mouse drag: {xy}");
     }
@@ -578,7 +626,7 @@ internal class Program
   /// <param name="xy">Double click position in pixels.</param>
   private static void MouseDoubleClick(IMouse mouse, MouseButton btn, System.Numerics.Vector2 xy)
   {
-    if (btn == MouseButton.Left)
+    if (btn == MouseButton.Right)
     {
       Util.Util.Message("Closed by double-click.", true);
       window?.Close();
@@ -592,12 +640,10 @@ internal class Program
   /// <param name="btn">Mouse wheel object (Y coordinate is used here).</param>
   private static void MouseScroll(IMouse mouse, ScrollWheel wheel)
   {
+    if (tb != null)
+      tb.MouseWheel(mouse, wheel);
+
     // wheel.Y is -1 or 1
     Util.Util.MessageInvariant($"Mouse scroll: {wheel.Y}");
-
-    if (Objects.Count > 0)
-    {
-      LastObject.Rotate(wheel.Y * 0.1f);
-    }
   }
 }
