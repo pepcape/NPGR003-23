@@ -507,11 +507,13 @@ internal class Program
         Util.Util.Message("T           toggle texture", true);
         Util.Util.Message("P           toggle perspective", true);
         Util.Util.Message("C           camera reset", true);
-        Util.Util.Message("Home        reset current object", true);
+        Util.Util.Message("Left, Right rotate the object", true);
+        Util.Util.Message("Home        reset the object", true);
         Util.Util.Message("F1          print help", true);
         Util.Util.Message("Esc         quit the program", true);
-        Util.Util.Message("Mouse.left  drag current object", true);
-        Util.Util.Message("Mouse.wheel rotate current object", true);
+        Util.Util.Message("Mouse.left  Trackball rotation", true);
+        Util.Util.Message("Mouse.right drag current object", true);
+        Util.Util.Message("Mouse.wheel zoom in/out", true);
         break;
 
       case Key.Escape:

@@ -25,10 +25,10 @@ Quits the application.
 Rotating of the object in front of the viewer using **Trackball**.
 
 **Wheel**
-Scale of the current object.
+Zoom in/out.
 
 **Right button**
-Drag the current object.
+Drag the object.
 
 # Notes
 * matrix transformations
