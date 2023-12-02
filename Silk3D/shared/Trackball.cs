@@ -1,16 +1,15 @@
 ﻿using System;
 using Silk.NET.Input;
 using Silk.NET.Maths;
-
-using Vector2 = Silk.NET.Maths.Vector2D<float>;
-using Vector3 = Silk.NET.Maths.Vector3D<float>;
-using Vector3d = Silk.NET.Maths.Vector3D<double>;
-using Matrix4 = Silk.NET.Maths.Matrix4X4<float>;
-using MouseButton = Silk.NET.Input.MouseButton;
 // ReSharper disable InconsistentNaming
 // ReSharper disable VirtualMemberCallInConstructor
 
 namespace Util;
+
+using Vector2 = Vector2D<float>;
+using Vector3 = Vector3D<float>;
+using Vector3d = Vector3D<double>;
+using Matrix4 = Matrix4X4<float>;
 
 /// <summary>
 /// Camera for realtime (OpenGL) applications, animation, etc.
@@ -80,14 +79,14 @@ public interface IDynamicCamera
   void ViewportChange (int width, int height, float near = 0.01f, float far = 1000.0f);
 
   /// <summary>
-  /// Gets a current model-view transformation matrix.
+  /// Gets a current view transformation matrix.
   /// </summary>
-  Matrix4 ModelView { get; }
+  Matrix4 View { get; }
 
   /// <summary>
-  /// Gets inverted model-view transformation matrix.
+  /// Gets inverted view transformation matrix.
   /// </summary>
-  Matrix4 ModelViewInv { get; }
+  Matrix4 ViewInv { get; }
 
   /// <summary>
   /// Perspective / orthographic projection?
@@ -221,14 +220,14 @@ public class DefaultDynamicCamera : IDynamicCamera
   {}
 
   /// <summary>
-  /// Gets a current model-view transformation matrix.
+  /// Gets a current view transformation matrix.
   /// </summary>
-  public virtual Matrix4 ModelView { get; }
+  public virtual Matrix4 View { get; }
 
   /// <summary>
-  /// Gets a current model-view transformation matrix.
+  /// Gets a current view transformation matrix.
   /// </summary>
-  public virtual Matrix4 ModelViewInv { get; }
+  public virtual Matrix4 ViewInv { get; }
 
   /// <summary>
   /// Perspective / orthographic projection?
@@ -243,7 +242,7 @@ public class DefaultDynamicCamera : IDynamicCamera
   /// <summary>
   /// Gets a current eye/camera position in world coordinates.
   /// </summary>
-  public virtual Vector3 Eye => new (ModelViewInv.M41, ModelViewInv.M42, ModelViewInv.M43);
+  public virtual Vector3 Eye => new (ViewInv.M41, ViewInv.M42, ViewInv.M43);
 
   /// <summary>
   /// Vertical field-of-view angle in radians.
@@ -332,8 +331,8 @@ public class Trackball : DefaultDynamicCamera
     // "polar coordinates" method
     public Vector3 IntersectionI (float x, float y)
     {
-      Vector3d o = new Vector3d(0, 0, -c);
-      Vector3d m = new Vector3d(x - center.X, y - center.Y, c);
+      Vector3d o = new(0, 0, -c);
+      Vector3d m = new(x - center.X, y - center.Y, c);
       Vector3d v = o - m;
       v = Vector3D.Normalize(v);
       double A = v.X * v.X * b * b * c * c + v.Y * v.Y * a * a * c * c + v.Z * v.Z * a * a * b * b;
@@ -393,7 +392,7 @@ public class Trackball : DefaultDynamicCamera
   /// <summary>
   /// Which mouse button is used for trackball movement?
   /// </summary>
-  public MouseButton Button { get; set; } = MouseButton.Left;
+  public MouseButton Button { get; set; }
 
   public Trackball (Vector3 cent, float diam = 5.0f)
   {
@@ -451,14 +450,14 @@ public class Trackball : DefaultDynamicCamera
     setEllipse(width, height);
   }
 
-  public override Matrix4 ModelView =>
+  public override Matrix4 View =>
     Matrix4X4.CreateTranslation(-Center) *
     Matrix4X4.CreateScale(Zoom / Diameter) *
     prevRotation *
     rotation *
     Matrix4X4.CreateTranslation(0.0f, 0.0f, -1.5f);
 
-  public override Matrix4 ModelViewInv
+  public override Matrix4 ViewInv
   {
     get
     {
@@ -538,7 +537,7 @@ public class Trackball : DefaultDynamicCamera
   }
 
   /// <remarks>Note that the returned angle is never bigger than the constant Pi.</remarks>
-  private static float CalculateAngle(in Vector3 first, in Vector3 second)
+  private static float CalculateAngle (in Vector3 first, in Vector3 second)
   {
     float temp = Vector3D.Dot(first, second);
     return MathF.Acos(Math.Clamp(temp / (first.Length * second.Length), -1.0f, 1.0f));
@@ -621,7 +620,7 @@ public class Trackball : DefaultDynamicCamera
     float dZoom = -wheel.Y;     // -wheel.Y / 120.0f;
     Zoom *= (float)Math.Pow(1.04, dZoom);
 
-    // zoom bounds:
+    // Zoom bounds:
     Zoom = Math.Clamp(Zoom, MinZoom, MaxZoom);
     return true;
   }
@@ -772,7 +771,7 @@ public class Trackball : DefaultDynamicCamera
         break;
     }
 
-    Center = Center + movement;
+    Center += movement;
   }
 
   private enum movementDirection

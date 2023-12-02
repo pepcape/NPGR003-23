@@ -324,7 +324,10 @@ internal class Program
     // Projection matrix (orthographics projection).
     // 'sceneDiameter' should be set properly.
     float minSize = Math.Min(width, height);
-    projectionMatrix = Matrix4X4.CreateOrthographic(sceneDiameter * width / minSize, sceneDiameter * height / minSize, 0.1f, 20.0f);
+    projectionMatrix = Matrix4X4.CreateOrthographic(
+      sceneDiameter * width / minSize,
+      sceneDiameter * height / minSize,
+      0.1f, 20.0f);
 
     // The tight coordinate is used for mouse scaling.
     mouseCx = sceneDiameter / minSize;
@@ -442,6 +445,10 @@ internal class Program
       case Key.T:
         // Toggle texture.
         useTexture = !useTexture;
+        if (useTexture)
+          Util.Util.Message($"Texture: {texture?.name}");
+        else
+          Util.Util.Message("Texturing off");
         break;
 
       case Key.F1:
