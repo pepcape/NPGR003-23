@@ -25,8 +25,8 @@ public class Options
   [Option('h', "height", Required = false, Default = 600, HelpText = "Window height in pixels.")]
   public int WindowHeight { get; set; } = 600;
 
-  [Option('t', "texture", Required = false, Default = "", HelpText = "User-defined texture.")]
-  public string TextureFile { get; set; } = "";
+  [Option('t', "texture", Required = false, Default = ":check:", HelpText = "User-defined texture.")]
+  public string TextureFile { get; set; } = ":check:";
 }
 
 /// <summary>
@@ -49,7 +49,7 @@ class Object
   public int BufferOffset { get; set; }
 
   /// <summary>
-  /// Number of indices (should be multiple of two for lines, multiple of three for triangles).
+  /// Number of indices (should be multiple of two for lines, multiple of three for triangles, multiple of four for quads).
   /// </summary>
   public int Indices { get; set; }
 
@@ -82,7 +82,7 @@ class Object
   /// <param name="angle">Angle in radians.</param>
   public void Rotate(float angle)
   {
-    Matrix4 rotation = Matrix4X4.CreateRotationZ(angle);
+    Matrix4 rotation = Matrix4X4.CreateFromYawPitchRoll(angle, -0.414141414f * angle, 0.3333333f * angle);
     ModelTransform *= Matrix4X4.CreateTranslation(-Center) * rotation * Matrix4X4.CreateTranslation(Center);
   }
 }
@@ -102,7 +102,7 @@ internal class Program
   // Global 3D data buffer.
   private const int MAX_INDICES = 2048;
   private const int MAX_VERTICES = 1024;
-  private const int VERTEX_SIZE = 6;
+  private const int VERTEX_SIZE = 8;
 
   private static List<uint> indexBuffer = new(MAX_INDICES);
   private static List<float> vertexBuffer = new(MAX_VERTICES * VERTEX_SIZE);
@@ -110,6 +110,12 @@ internal class Program
   private static BufferObject<float>? Vbo;
   private static BufferObject<uint>? Ebo;
   private static VertexArrayObject<float, uint>? Vao;
+
+  // Texture.
+  private static Util.Texture? texture;
+  private static bool useTexture = false;
+  private static string textureFile = ":check:";
+  private const int TEX_SIZE = 128;
 
   // Shader program.
   private static ShaderProgram? ShaderPrg;
@@ -127,7 +133,7 @@ internal class Program
     Objects.Add(new()
     {
       BufferId = 0,
-      Type = PrimitiveType.Triangles,
+      Type = Objects[0].Type,
       BufferOffset = Objects[0].BufferOffset,
       Indices = Objects[0].Indices
     });
@@ -151,7 +157,7 @@ internal class Program
 
   private static string WindowTitle()
   {
-    return $"01-FlatWorld - {Objects.Count} objects";
+    return $"02-Trackball - {Objects.Count} objects";
   }
 
   private static void SetWindowTitle()
@@ -178,6 +184,8 @@ internal class Program
         window.Closing += OnClose;
         window.Resize  += OnResize;
 
+        textureFile = o.TextureFile;
+
         window.Run();
       });
   }
@@ -186,8 +194,9 @@ internal class Program
   {
     Debug.Assert(Vao != null);
     Vao.Bind();
-    Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 6, 0);
-    Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, 6, 3);
+    Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 8, 0);
+    Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, 8, 3);
+    Vao.VertexAttributePointer(2, 2, VertexAttribPointerType.Float, 8, 6);
   }
 
   private static void OnLoad()
@@ -216,17 +225,28 @@ internal class Program
     //------------------------------------------------------
     // Render data.
 
-    // Init: one triangle
+    // Init: cube made of triangles
     vertexBuffer.AddRange(new[]
     {
-    //  x,     y,     z,     R,     G,     B
-      -0.5f, -0.3f,  0.0f,  1.0f,  0.2f,  0.2f,
-       0.5f, -0.3f,  0.0f,  0.1f,  1.0f,  0.1f,
-       0.0f,  0.6f,  0.0f,  0.3f,  0.3f,  1.0f,
+    //  x,     y,     z,     R,     G,     B,     s,    t
+      -1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,  // 0
+       1.0f, -1.0f, -1.0f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f,  // 1
+      -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  0.0f, 0.0f,  // 2
+       1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,  // 3
+      -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  1.0f, 1.0f,  // 4
+       1.0f,  1.0f, -1.0f,  1.0f,  0.5f,  1.0f,  0.0f, 1.0f,  // 5
+      -1.0f,  1.0f,  1.0f,  0.8f,  0.0f,  0.5f,  0.0f, 1.0f,  // 6
+       1.0f,  1.0f,  1.0f,  0.5f,  1.0f,  0.0f,  1.0f, 1.0f,  // 7
     });
     indexBuffer.AddRange(new uint[]
     {
-      0, 1, 2,
+      // 12 triangles
+      2, 3, 7, 2, 7, 6,
+      6, 7, 5, 6, 5, 4,
+      4, 5, 1, 4, 1, 0,
+      0, 1, 3, 0, 3, 2,
+      3, 1, 5, 3, 5, 7,
+      0, 2, 6, 0, 6, 4,
     });
 
     // Create the first object (the rest will be cloned from it).
@@ -235,7 +255,7 @@ internal class Program
       BufferId = 0,
       Type = PrimitiveType.Triangles,
       BufferOffset = 0,
-      Indices = 3
+      Indices = 36
     });
 
     // Vertex Array Object = Vertex buffer + Index buffer.
@@ -246,6 +266,19 @@ internal class Program
 
     // Initialize the shaders.
     ShaderPrg = new ShaderProgram(Gl, "shader.vert", "shader.frag");
+
+    // Initialize the texture.
+    if (textureFile.StartsWith(":"))
+    {
+      // Generated texture.
+      texture = new(TEX_SIZE, TEX_SIZE, textureFile);
+      texture.GenerateTexture(Gl);
+    }
+    else
+    {
+      texture = new(textureFile);
+      texture.OpenglTextureFromFile(Gl);
+    }
 
     // Main window.
     SetWindowTitle();
@@ -286,12 +319,12 @@ internal class Program
     Gl?.Viewport(0, 0, (uint)width, (uint)height);
 
     // Put the whole scene in front of the camera.
-    viewMatrix = Matrix4X4.CreateTranslation(0.0f, 0.0f, -1.0f);
+    viewMatrix = Matrix4X4.CreateTranslation(0.0f, 0.0f, -5.0f);
 
     // Projection matrix (orthographics projection).
     // 'sceneDiameter' should be set properly.
-    float minSize = 2.0f * Math.Min(width, height);
-    projectionMatrix = Matrix4X4.CreateOrthographic(sceneDiameter * width / minSize, sceneDiameter * height / minSize, 0.1f, 10.0f);
+    float minSize = Math.Min(width, height);
+    projectionMatrix = Matrix4X4.CreateOrthographic(sceneDiameter * width / minSize, sceneDiameter * height / minSize, 0.1f, 20.0f);
 
     // The tight coordinate is used for mouse scaling.
     mouseCx = sceneDiameter / minSize;
@@ -319,7 +352,12 @@ internal class Program
     Debug.Assert(Gl != null);
     Debug.Assert(ShaderPrg != null);
 
-    Gl.Clear((uint)ClearBufferMask.ColorBufferBit);
+    Gl.Clear((uint)ClearBufferMask.ColorBufferBit | (uint)ClearBufferMask.DepthBufferBit);
+
+    // Rendering properties (set in every frame for clarity).
+    Gl.Enable(GLEnum.DepthTest);
+    Gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
+    Gl.Disable(GLEnum.CullFace);
 
     // Draw the scene (set of Object-s).
     VaoPointers();
@@ -328,6 +366,12 @@ internal class Program
     // Shared shader uniforms.
     ShaderPrg.TrySetUniform("view", viewMatrix);
     ShaderPrg.TrySetUniform("projection", projectionMatrix);
+    if (texture == null || !texture.IsValid())
+      useTexture = false;
+    ShaderPrg.TrySetUniform("useTexture", useTexture);
+    ShaderPrg.TrySetUniform("texture", 0);
+    if (useTexture)
+      texture?.Bind(Gl);
 
     // Draw the objects.
     foreach (var o in Objects)
@@ -338,6 +382,11 @@ internal class Program
       // Draw the batch.
       Gl.DrawElements(o.Type, (uint)o.Indices, DrawElementsType.UnsignedInt, (void*)(o.BufferOffset * sizeof(float)));
     }
+
+    // Cleanup.
+    Gl.UseProgram(0);
+    if (useTexture)
+      Gl.BindTexture(TextureTarget.Texture2D, 0);
   }
 
   /// <summary>
@@ -349,7 +398,7 @@ internal class Program
     ShaderPrg?.Dispose();
 
     // Remember to dispose the textures.
-    //DisposeTextures();
+    texture?.Dispose();
   }
 
   /// <summary>
@@ -390,20 +439,14 @@ internal class Program
         }
         break;
 
-      case Key.KeypadAdd:
-        // Add a new object.
-        NewObject();
-        break;
-
-      case Key.KeypadSubtract:
-        // Delete the last object.
-        DeleteObject();
+      case Key.T:
+        // Toggle texture.
+        useTexture = !useTexture;
         break;
 
       case Key.F1:
         // Help.
-        Util.Util.Message("+           new current object", true);
-        Util.Util.Message("-           delete current object", true);
+        Util.Util.Message("T           toggle texture", true);
         Util.Util.Message("Home        reset current object", true);
         Util.Util.Message("F1          print help", true);
         Util.Util.Message("Esc         quit the program", true);

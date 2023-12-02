@@ -94,7 +94,7 @@ internal class Program
   private static float height;
 
   // Scene size.
-  private static float sceneDiameter = 4.0f;
+  private static float sceneDiameter = 2.0f;
 
   // Global 3D data buffer.
   private const int MAX_INDICES = 2048;
@@ -287,7 +287,7 @@ internal class Program
 
     // Projection matrix (orthographics projection).
     // 'sceneDiameter' should be set properly.
-    float minSize = 2.0f * Math.Min(width, height);
+    float minSize = Math.Min(width, height);
     projectionMatrix = Matrix4X4.CreateOrthographic(sceneDiameter * width / minSize, sceneDiameter * height / minSize, 0.1f, 10.0f);
 
     // The tight coordinate is used for mouse scaling.
@@ -335,6 +335,9 @@ internal class Program
       // Draw the batch.
       Gl.DrawElements(o.Type, (uint)o.Indices, DrawElementsType.UnsignedInt, (void*)(o.BufferOffset * sizeof(float)));
     }
+
+    // Cleanup.
+    Gl.UseProgram(0);
   }
 
   /// <summary>

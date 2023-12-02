@@ -2,6 +2,7 @@
   "profiles": {
     "02-Texture": {
       "commandName": "Project",
+      "commandLineArgs": "-t :test:",
       "workingDirectory": "$(ProjectDir)"
     }
   }
