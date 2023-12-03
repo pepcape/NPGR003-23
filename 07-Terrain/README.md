@@ -16,6 +16,20 @@ I'd recommend simple and efficient
 you can use any algorithm which is capable of creating terrains gradually, by increasing
 the subdivision (recursion) depth.
 
+# Commands
+Use keyboard commands to change the terrain triangle mesh. You should implement at least
+these commands:
+* **Subdivide** the mesh - create more detailed mesh. You should keep the shared vertices
+  and insert new ones according to the defined Hausdorff coefficient (relative amplitude of the
+  random displacement of the middle points).
+* **Updivide** the mesh - return back to the coarser mesh, so number of vertices and triangles will
+  disappear. Executing the Updivide+Subdivide command pair will cause the original terrain to
+  change slightly.
+* Change the **Hausdorff coefficient** - random subdivision of an edge should use the random value
+  based on original edge size and this coefficient.
+* You should compute **normal vectors** (at the vertices) automatically, use the `I` key to toggle the
+  shading mode to see results.
+
 ## Rendering
 Use one large vertex buffer (`VB`) for storing all vertices of the mesh.
 Index buffer[s] (`IB`) should be used to define triangles of the mesh (three indices per triangle).
@@ -34,6 +48,11 @@ passing the rest of quantities unchanged.
 You will need to provide valid **normal vectors** before turning on the shading!
 You are supposed to update the shader if you're going to implement more advanced
 terrain visualization (texture[s], etc).
+
+Pilot solution shows how to **update vertex buffer data** - see the
+`UpdateVertex()` function. Locking was introduced because the **UI** (keyboard) and
+**rendering** (`OnRender()`) run in parallel.
+
 
 # Sil.NET framework
 It is easy to use the [Silk.NET](https://github.com/dotnet/Silk.NET) in your C#

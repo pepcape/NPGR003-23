@@ -6,6 +6,7 @@ using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Text;
 using Util;
 // ReSharper disable InconsistentNaming
@@ -91,6 +92,9 @@ internal class Program
   private static IWindow? window;
   private static GL? Gl;
 
+  // VB locking (too lousy?)
+  private static object renderLock = new();
+
   // Window.
   private static float width;
   private static float height;
@@ -103,8 +107,8 @@ internal class Program
   private static float sceneDiameter = 4.0f;
 
   // Global 3D data buffer.
-  private const int MAX_INDICES = 2048;
-  private const int MAX_VERTICES = 1024;
+  private const int MAX_INDICES = 4096;
+  private const int MAX_VERTICES = 4096;
   private const int VERTEX_SIZE = 11;
 
   private static List<uint> indexBuffer = new(MAX_INDICES);
@@ -136,13 +140,16 @@ internal class Program
   /// </summary>
   private static void NewObject()
   {
-    Objects.Add(new()
+    lock (renderLock)
     {
-      BufferId = 0,
-      Type = Objects[0].Type,
-      BufferOffset = Objects[0].BufferOffset,
-      Indices = Objects[0].Indices
-    });
+      Objects.Add(new()
+      {
+        BufferId = 0,
+        Type = Objects[0].Type,
+        BufferOffset = Objects[0].BufferOffset,
+        Indices = Objects[0].Indices
+      });
+    }
     SetWindowTitle();
   }
 
@@ -152,10 +159,11 @@ internal class Program
   private static void DeleteObject ()
   {
     if (Objects.Count > 1)
-    {
-      Objects.RemoveAt(Objects.Count - 1);
-      SetWindowTitle();
-    }
+      lock (renderLock)
+      {
+        Objects.RemoveAt(Objects.Count - 1);
+        SetWindowTitle();
+      }
   }
 
   //////////////////////////////////////////////////////
@@ -247,63 +255,68 @@ internal class Program
     //------------------------------------------------------
     // Render data.
 
-    // Init: cube made of triangles
+    // How to allocate 2000 vertices (all floats will be 0.0f)
+    //vertexBuffer.AddRange(new float[2000 * VERTEX_SIZE]);
+
+    // Init: triangle mesh with 9 vertices and 8 triangles
     vertexBuffer.AddRange(new[]
     {
     //  x,     y,     z,     R,     G,     B,     Nx,    Ny,    Nz,   s,    t
-      -1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, -1.0f, -1.0f, -1.0f, 1.0f, 0.0f,  // 0
-       1.0f, -1.0f, -1.0f,  0.5f,  1.0f,  0.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f,  // 1
-      -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f, -1.0f,  1.0f, 0.0f, 0.0f,  // 2
-       1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, -1.0f,  1.0f, 1.0f, 0.0f,  // 3
-      -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  0.0f, -1.0f,  1.0f, -1.0f, 1.0f, 1.0f,  // 4
-       1.0f,  1.0f, -1.0f,  1.0f,  0.5f,  1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 1.0f,  // 5
-      -1.0f,  1.0f,  1.0f,  0.8f,  0.0f,  0.5f, -1.0f,  1.0f,  1.0f, 0.0f, 1.0f,  // 6
-       1.0f,  1.0f,  1.0f,  0.5f,  1.0f,  0.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f,  // 7
+      -1.0f,  0.0f,  1.0f,  1.0f,  1.0f,  1.0f, -0.3f,  1.0f,  0.6f, 0.0f, 0.0f,  // 0
+       0.0f,  0.1f,  1.0f,  0.5f,  0.8f,  1.0f,  0.0f,  1.0f,  0.6f, 0.5f, 0.0f,  // 1
+       1.0f,  0.0f,  1.0f,  0.0f,  0.6f,  1.0f,  0.3f,  1.0f,  0.6f, 1.0f, 0.0f,  // 2
+      -1.0f,  0.1f,  0.0f,  0.0f,  0.2f,  0.2f, -0.6f,  1.0f,  0.0f, 0.0f, 0.5f,  // 3
+       0.0f,  0.3f,  0.0f,  0.2f,  0.4f,  0.4f,  0.0f,  1.0f, -0.1f, 0.5f, 0.5f,  // 4
+       1.0f,  0.2f,  0.0f,  0.9f,  0.6f,  0.6f,  0.6f,  1.0f,  0.0f, 1.0f, 0.5f,  // 5
+      -1.0f,  0.2f, -1.0f,  1.0f,  0.0f,  0.2f, -0.4f,  1.0f, -0.5f, 0.0f, 1.0f,  // 6
+       0.0f,  0.3f, -1.0f,  0.7f,  0.5f,  0.6f,  0.0f,  1.0f, -0.5f, 0.5f, 1.0f,  // 7
+       1.0f,  0.2f, -1.0f,  0.4f,  1.0f,  0.0f,  0.4f,  1.0f, -0.5f, 1.0f, 1.0f,  // 8
     });
     indexBuffer.AddRange(new uint[]
     {
-      // 12 triangles
-      2, 3, 7, 2, 7, 6,
-      6, 7, 5, 6, 5, 4,
-      4, 5, 1, 4, 1, 0,
-      0, 1, 3, 0, 3, 2,
-      3, 1, 5, 3, 5, 7,
-      0, 2, 6, 0, 6, 4,
+      // 8 triangles
+      0, 1, 4, 0, 4, 3,
+      1, 2, 5, 1, 5, 4,
+      3, 4, 7, 3, 7, 6,
+      4, 5, 8, 4, 8, 7,
     });
 
     // Create the first object (the rest will be cloned from it).
-    Objects.Add(new()
+    lock (renderLock)
     {
-      BufferId = 0,
-      Type = PrimitiveType.Triangles,
-      BufferOffset = 0,
-      Indices = 36
-    });
+      Objects.Add(new()
+      {
+        BufferId = 0,
+        Type = PrimitiveType.Triangles,
+        BufferOffset = 0,
+        Indices = 24
+      });
 
-    // Vertex Array Object = Vertex buffer + Index buffer.
-    Ebo = new BufferObject<uint>(Gl, indexBuffer.ToArray(), BufferTargetARB.ElementArrayBuffer);
-    Vbo = new BufferObject<float>(Gl, vertexBuffer.ToArray(), BufferTargetARB.ArrayBuffer);
-    Vao = new VertexArrayObject<float, uint>(Gl, Vbo, Ebo);
-    VaoPointers();
+      // Vertex Array Object = Vertex buffer + Index buffer.
+      Ebo = new BufferObject<uint>(Gl, indexBuffer.ToArray(), BufferTargetARB.ElementArrayBuffer);
+      Vbo = new BufferObject<float>(Gl, vertexBuffer.ToArray(), BufferTargetARB.ArrayBuffer);
+      Vao = new VertexArrayObject<float, uint>(Gl, Vbo, Ebo);
+      VaoPointers();
 
-    // Initialize the shaders.
-    ShaderPrg = new ShaderProgram(Gl, "shader.vert", "shader.frag");
+      // Initialize the shaders.
+      ShaderPrg = new ShaderProgram(Gl, "shader.vert", "shader.frag");
 
-    // Initialize the texture.
-    if (textureFile.StartsWith(":"))
-    {
-      // Generated texture.
-      texture = new(TEX_SIZE, TEX_SIZE, textureFile);
-      texture.GenerateTexture(Gl);
+      // Initialize the texture.
+      if (textureFile.StartsWith(":"))
+      {
+        // Generated texture.
+        texture = new(TEX_SIZE, TEX_SIZE, textureFile);
+        texture.GenerateTexture(Gl);
+      }
+      else
+      {
+        texture = new(textureFile, textureFile);
+        texture.OpenglTextureFromFile(Gl);
+      }
+
+      // Trackball.
+      tb = new(sceneCenter, sceneDiameter);
     }
-    else
-    {
-      texture = new(textureFile, textureFile);
-      texture.OpenglTextureFromFile(Gl);
-    }
-
-    // Trackball.
-    tb = new(sceneCenter, sceneDiameter);
 
     // Main window.
     SetWindowTitle();
@@ -333,18 +346,8 @@ internal class Program
 
     tb?.ViewportChange((int)width, (int)height, 0.05f, 20.0f);
 
-    // Put the whole scene in front of the camera.
-    //viewMatrix = Matrix4X4.CreateTranslation(0.0f, 0.0f, -5.0f);
-
-    // Projection matrix (orthographic projection).
-    // 'sceneDiameter' should be set properly.
-    float minSize = Math.Min(width, height);
-    //projectionMatrix = Matrix4X4.CreateOrthographic(
-    //  sceneDiameter * width / minSize,
-    //  sceneDiameter * height / minSize,
-    //  0.1f, 20.0f);
-
     // The tight coordinate is used for mouse scaling.
+    float minSize = Math.Min(width, height);
     mouseCx = sceneDiameter / minSize;
     // Vertical mouse scaling is just negative...
     mouseCy = -mouseCx;
@@ -373,51 +376,72 @@ internal class Program
 
     Gl.Clear((uint)ClearBufferMask.ColorBufferBit | (uint)ClearBufferMask.DepthBufferBit);
 
-    // Rendering properties (set in every frame for clarity).
-    Gl.Enable(GLEnum.DepthTest);
-    Gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
-    Gl.Disable(GLEnum.CullFace);
-
-    // Draw the scene (set of Object-s).
-    VaoPointers();
-    ShaderPrg.Use();
-
-    // Shared shader uniforms - matrices.
-    ShaderPrg.TrySetUniform("view", tb.View);
-    ShaderPrg.TrySetUniform("projection", tb.Projection);
-
-    // Shared shader uniforms - Phong shading.
-    ShaderPrg.TrySetUniform("lightColor", 1.0f, 1.0f, 1.0f);
-    ShaderPrg.TrySetUniform("lightPosition", -8.0f, 8.0f, 8.0f);
-    ShaderPrg.TrySetUniform("eyePosition", tb.Eye);
-    ShaderPrg.TrySetUniform("Ka", 0.1f);
-    ShaderPrg.TrySetUniform("Kd", 0.7f);
-    ShaderPrg.TrySetUniform("Ks", 0.3f);
-    ShaderPrg.TrySetUniform("shininess", 60.0f);
-    ShaderPrg.TrySetUniform("usePhong", usePhong);
-
-    // Shared shader uniforms - Texture.
-    if (texture == null || !texture.IsValid())
-      useTexture = false;
-    ShaderPrg.TrySetUniform("useTexture", useTexture);
-    ShaderPrg.TrySetUniform("texture", 0);
-    if (useTexture)
-      texture?.Bind(Gl);
-
-    // Draw the objects.
-    foreach (var o in Objects)
+    lock (renderLock)
     {
-      // Object-specific uniforms.
-      ShaderPrg.TrySetUniform("model", o.ModelTransform);
+      // Rendering properties (set in every frame for clarity).
+      Gl.Enable(GLEnum.DepthTest);
+      Gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
+      Gl.Disable(GLEnum.CullFace);
 
-      // Draw the batch.
-      Gl.DrawElements(o.Type, (uint)o.Indices, DrawElementsType.UnsignedInt, (void*)(o.BufferOffset * sizeof(float)));
+      // Draw the scene (set of Object-s).
+      VaoPointers();
+      ShaderPrg.Use();
+
+      // Shared shader uniforms - matrices.
+      ShaderPrg.TrySetUniform("view", tb.View);
+      ShaderPrg.TrySetUniform("projection", tb.Projection);
+
+      // Shared shader uniforms - Phong shading.
+      ShaderPrg.TrySetUniform("lightColor", 1.0f, 1.0f, 1.0f);
+      ShaderPrg.TrySetUniform("lightPosition", -8.0f, 8.0f, 8.0f);
+      ShaderPrg.TrySetUniform("eyePosition", tb.Eye);
+      ShaderPrg.TrySetUniform("Ka", 0.1f);
+      ShaderPrg.TrySetUniform("Kd", 0.7f);
+      ShaderPrg.TrySetUniform("Ks", 0.3f);
+      ShaderPrg.TrySetUniform("shininess", 60.0f);
+      ShaderPrg.TrySetUniform("usePhong", usePhong);
+
+      // Shared shader uniforms - Texture.
+      if (texture == null || !texture.IsValid())
+        useTexture = false;
+      ShaderPrg.TrySetUniform("useTexture", useTexture);
+      ShaderPrg.TrySetUniform("texture", 0);
+      if (useTexture)
+        texture?.Bind(Gl);
+
+      // Draw the objects.
+      foreach (var o in Objects)
+      {
+        // Object-specific uniforms.
+        ShaderPrg.TrySetUniform("model", o.ModelTransform);
+
+        // Draw the batch.
+        Gl.DrawElements(o.Type, (uint)o.Indices, DrawElementsType.UnsignedInt, (void*)(o.BufferOffset * sizeof(float)));
+      }
     }
 
     // Cleanup.
     Gl.UseProgram(0);
     if (useTexture)
       Gl.BindTexture(TextureTarget.Texture2D, 0);
+  }
+
+  /// <summary>
+  /// Demo function - shows how to update one vertex of the triangle mesh.
+  /// </summary>
+  private static unsafe void UpdateVertex(float dy)
+  {
+    lock (renderLock)
+    {
+      // I'm going to change the y coordinate (offset = 1) of the middle vertex (index = 4)...
+      vertexBuffer[4 * VERTEX_SIZE + 1] += dy;
+
+      // ...but I'm changing the whole vertex data (11 floats)
+      var span = CollectionsMarshal.AsSpan(vertexBuffer);
+
+      Vbo?.UpdateData(span, 4 * VERTEX_SIZE, VERTEX_SIZE);
+      // This is not the nicest solution, I'd better use float[] and pass it directly to UpdateData()...
+    }
   }
 
   /// <summary>
@@ -512,6 +536,16 @@ internal class Program
         }
         break;
 
+      case Key.Up:
+        // Move the middle vertex a little bit higher.
+        UpdateVertex(0.1f);
+        break;
+
+      case Key.Down:
+        // Move the middle vertex a little bit lower.
+        UpdateVertex(-0.1f);
+        break;
+
       case Key.Left:
         if (Objects.Count > 0)
         {
@@ -532,6 +566,7 @@ internal class Program
         Util.Util.Message("I           toggle Phong shading", true);
         Util.Util.Message("P           toggle perspective", true);
         Util.Util.Message("C           camera reset", true);
+        Util.Util.Message("Up, Down    update the vertex", true);
         Util.Util.Message("Left, Right rotate the object", true);
         Util.Util.Message("Home        reset the object", true);
         Util.Util.Message("F1          print help", true);
