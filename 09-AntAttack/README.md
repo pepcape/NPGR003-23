@@ -11,8 +11,8 @@ The entire 3D scene ("the city") must be rendered interactively using the
 [OpenGL library](https://www.opengl.org/) bound to the .NET through the
 [Silk.NET library](https://github.com/dotnet/Silk.NET).
 
-No need to use the original **isometric viewing system**. You must to
-keep the 3D scene made of "axis-aligned" cubes.
+No need to use the original **isometric viewing system** (but the use of orthographic
+projection is required). You need to keep the 3D scene made of **"axis-aligned" cubes**.
 
 # Details
 * Don't use any advanced shading, just assign **five colors/shades** to the
@@ -42,6 +42,8 @@ For bonus points you can implement some logic inspired by the original game:
 * It would probably be fair if you had some **defenses against the enemies**, e.g.
   throwing "grenades" from the original game seems like a good idea. Beware
   of the grenades - they can also hurt your characters! (*level 3*)
+* **Micro-animations** for character movements (forward step, jump, fall),
+  enemies (running, hurting your characters...), grenades (throwing, blowing up)...
 * **Design interesting "cities"** from cubes. You can use the original idea -
   to encode occupied cubes by bits (the original city was no more than eight
   stories high, so one byte was used for one square of the floor plan. We can
@@ -71,16 +73,18 @@ See the shared [point table](https://docs.google.com/spreadsheets/d/1QLukOcSRPa5
 **Basic solution: 10 points**
 * Rendering of the "city made of cubes" in **orthographic view**.
 * **Rotation of the view** around a vertical axis.
-* Representation of the city using bits in vertically oriented words.
 * Simple character able to move in **four directions (WASD)** and jump onto
   **one unit high obstacles**.
 
-**Bonus points: up to 16+ more points**
+**Bonus points: up to 18+ more points**
+* Representation of the city using **bits in vertically oriented words**. You will need
+  to generate 3D world from these numbers.
 * **Enemies** (dumb or smarter ones).
 * **Game logic** (male/female character, looking for another character to
   rescue her/him).
 * More **advanced rendering** of the characters and enemies.
 * Some **defenses** against the enemies (e.g. grenades)
+* **Micro-animations** of the characters/enemies/grenades...
 * **Tools for "city designers"**: at least lines/planes, walls, staircase
   generators, etc. (no need to create an interactive application, procedural
   tools with some scripting capabilities will suffice)
