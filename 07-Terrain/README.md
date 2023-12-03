@@ -16,8 +16,8 @@ I'd recommend simple and efficient
 you can use any algorithm which is capable of creating terrains gradually, by increasing
 the subdivision (recursion) depth.
 
-# Commands
-Use keyboard commands to change the terrain triangle mesh. You should implement at least
+## Commands
+Use **keyboard commands** to change the terrain triangle mesh. You should implement at least
 these commands:
 * **Subdivide** the mesh - create more detailed mesh. You should keep the shared vertices
   and insert new ones according to the defined Hausdorff coefficient (relative amplitude of the
@@ -29,6 +29,7 @@ these commands:
   based on original edge size and this coefficient.
 * You should compute **normal vectors** (at the vertices) automatically, use the `I` key to toggle the
   shading mode to see results.
+* Include all the **new keyboard commands** (hotkeys) in the `F1` help list.
 
 ## Rendering
 Use one large vertex buffer (`VB`) for storing all vertices of the mesh.
@@ -41,8 +42,9 @@ is required,
 using only sparse vertices from it, according to `IB` specific to every subdivision level). `VB` will
 be updated but index buffers can be prepared in advance and remain constant.
 
-**Vertex shader** will be the classical one - doing "model-view-transform" for vertex coordinates,
-passing the rest of quantities unchanged.
+**Vertex shader** is almost the "classical" one - doing "model-view-transform" for vertex
+coordinates, passing the rest of quantities unchanged. The only extension is passing the original
+*world-space coordinates* for shading computations in the fragment shader.
 
 **Fragment shader** in the pilot solution is able to compute optional "Phong shading".
 You will need to provide valid **normal vectors** before turning on the shading!
@@ -53,8 +55,7 @@ Pilot solution shows how to **update vertex buffer data** - see the
 `UpdateVertex()` function. Locking was introduced because the **UI** (keyboard) and
 **rendering** (`OnRender()`) run in parallel.
 
-
-# Sil.NET framework
+# Silk.NET framework
 It is easy to use the [Silk.NET](https://github.com/dotnet/Silk.NET) in your C#
 program, you just install the [Silk.NET NuGet package](https://www.nuget.org/packages/Silk.NET/).
 
