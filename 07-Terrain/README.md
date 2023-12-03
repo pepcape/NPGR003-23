@@ -16,6 +16,25 @@ I'd recommend simple and efficient
 you can use any algorithm which is capable of creating terrains gradually, by increasing
 the subdivision (recursion) depth.
 
+## Rendering
+Use one large vertex buffer (`VB`) for storing all vertices of the mesh.
+Index buffer[s] (`IB`) should be used to define triangles of the mesh (three indices per triangle).
+
+You have two options:
+1. either you will re-upload the whole `VB` and `IB` every time subdivision/updivision
+is required,
+2. or you come up with a smarter solution (e.g. you can allocate full-sized `VB` at the beginning,
+using only sparse vertices from it, according to `IB` specific to every subdivision level). `VB` will
+be updated but index buffers can be prepared in advance and remain constant.
+
+**Vertex shader** will be the classical one - doing "model-view-transform" for vertex coordinates,
+passing the rest of quantities unchanged.
+
+**Fragment shader** in the pilot solution is able to compute optional "Phong shading".
+You will need to provide valid **normal vectors** before turning on the shading!
+You are supposed to update the shader if you're going to implement more advanced
+terrain visualization (texture[s], etc).
+
 # Sil.NET framework
 It is easy to use the [Silk.NET](https://github.com/dotnet/Silk.NET) in your C#
 program, you just install the [Silk.NET NuGet package](https://www.nuget.org/packages/Silk.NET/).
