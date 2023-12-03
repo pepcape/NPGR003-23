@@ -5,6 +5,8 @@ using Silk.NET.OpenGL;
 namespace Util;
 
 using Matrix4 = Matrix4X4<float>;
+using Vector2 = Vector2D<float>;
+using Vector3 = Vector3D<float>;
 using Vector4 = Vector4D<float>;
 
 public class ShaderProgram : IDisposable
@@ -79,6 +81,66 @@ public class ShaderProgram : IDisposable
     return true;
   }
 
+  public unsafe bool TrySetUniform (string name, Vector2 value)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    _gl.Uniform2(location, value.X, value.Y);
+    return true;
+  }
+
+  public unsafe bool TrySetUniform (string name, float x, float y)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    _gl.Uniform2(location, x, y);
+    return true;
+  }
+
+  public unsafe bool TrySetUniform (string name, Vector3 value)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    _gl.Uniform3(location, value.X, value.Y, value.Z);
+    return true;
+  }
+
+  public unsafe bool TrySetUniform (string name, float x, float y, float z)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    _gl.Uniform3(location, x, y, z);
+    return true;
+  }
+
+  public unsafe bool TrySetUniform (string name, Vector4 value)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    _gl.Uniform4(location, value.X, value.Y, value.Z, value.W);
+    return true;
+  }
+
+  public unsafe bool TrySetUniform (string name, float x, float y, float z, float w)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    _gl.Uniform4(location, x, y, z, w);
+    return true;
+  }
+
   public unsafe bool TrySetUniform(string name, float[] value)
   {
     int location = _gl.GetUniformLocation(_handle, name);
@@ -86,6 +148,28 @@ public class ShaderProgram : IDisposable
       return false;
 
     _gl.Uniform1(location, value.AsSpan());
+    return true;
+  }
+
+  public unsafe bool TrySetUniform(string name, Vector3[] value)
+  {
+    int location = _gl.GetUniformLocation(_handle, name);
+    if (location == -1)
+      return false;
+
+    float[] tmp = new float[value.Length * 3];
+    fixed (float* pinned = tmp)
+    {
+      float* ptr = pinned;
+      foreach (var v in value)
+      {
+        *ptr++ = v.X;
+        *ptr++ = v.Y;
+        *ptr++ = v.Z;
+      }
+    }
+
+    _gl.Uniform3(location, tmp.AsSpan());
     return true;
   }
 

@@ -105,7 +105,7 @@ internal class Program
   // Global 3D data buffer.
   private const int MAX_INDICES = 2048;
   private const int MAX_VERTICES = 1024;
-  private const int VERTEX_SIZE = 8;
+  private const int VERTEX_SIZE = 11;
 
   private static List<uint> indexBuffer = new(MAX_INDICES);
   private static List<float> vertexBuffer = new(MAX_VERTICES * VERTEX_SIZE);
@@ -119,6 +119,9 @@ internal class Program
   private static bool useTexture = false;
   private static string textureFile = ":check:";
   private const int TEX_SIZE = 128;
+
+  // Lighting.
+  private static bool usePhong = false;
 
   // Shader program.
   private static ShaderProgram? ShaderPrg;
@@ -172,6 +175,9 @@ internal class Program
       sb.Append($", txt={texture.name}");
     else
       sb.Append(", no texture");
+    if (usePhong)
+      sb.Append(", Phong shading");
+
     return sb.ToString();
   }
 
@@ -209,9 +215,10 @@ internal class Program
   {
     Debug.Assert(Vao != null);
     Vao.Bind();
-    Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, 8, 0);
-    Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, 8, 3);
-    Vao.VertexAttributePointer(2, 2, VertexAttribPointerType.Float, 8, 6);
+    Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, VERTEX_SIZE, 0);
+    Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, VERTEX_SIZE, 3);
+    Vao.VertexAttributePointer(2, 3, VertexAttribPointerType.Float, VERTEX_SIZE, 6);
+    Vao.VertexAttributePointer(3, 2, VertexAttribPointerType.Float, VERTEX_SIZE, 9);
   }
 
   private static void OnLoad()
@@ -243,15 +250,15 @@ internal class Program
     // Init: cube made of triangles
     vertexBuffer.AddRange(new[]
     {
-    //  x,     y,     z,     R,     G,     B,     s,    t
-      -1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,  // 0
-       1.0f, -1.0f, -1.0f,  0.5f,  1.0f,  0.0f,  0.0f, 0.0f,  // 1
-      -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f,  0.0f, 0.0f,  // 2
-       1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, 0.0f,  // 3
-      -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  0.0f,  1.0f, 1.0f,  // 4
-       1.0f,  1.0f, -1.0f,  1.0f,  0.5f,  1.0f,  0.0f, 1.0f,  // 5
-      -1.0f,  1.0f,  1.0f,  0.8f,  0.0f,  0.5f,  0.0f, 1.0f,  // 6
-       1.0f,  1.0f,  1.0f,  0.5f,  1.0f,  0.0f,  1.0f, 1.0f,  // 7
+    //  x,     y,     z,     R,     G,     B,     Nx,    Ny,    Nz,   s,    t
+      -1.0f, -1.0f, -1.0f,  1.0f,  0.0f,  0.0f, -1.0f, -1.0f, -1.0f, 1.0f, 0.0f,  // 0
+       1.0f, -1.0f, -1.0f,  0.5f,  1.0f,  0.0f,  1.0f, -1.0f, -1.0f, 0.0f, 0.0f,  // 1
+      -1.0f, -1.0f,  1.0f,  1.0f,  1.0f,  1.0f, -1.0f, -1.0f,  1.0f, 0.0f, 0.0f,  // 2
+       1.0f, -1.0f,  1.0f,  0.0f,  0.0f,  1.0f,  1.0f, -1.0f,  1.0f, 1.0f, 0.0f,  // 3
+      -1.0f,  1.0f, -1.0f,  1.0f,  1.0f,  0.0f, -1.0f,  1.0f, -1.0f, 1.0f, 1.0f,  // 4
+       1.0f,  1.0f, -1.0f,  1.0f,  0.5f,  1.0f,  1.0f,  1.0f, -1.0f, 0.0f, 1.0f,  // 5
+      -1.0f,  1.0f,  1.0f,  0.8f,  0.0f,  0.5f, -1.0f,  1.0f,  1.0f, 0.0f, 1.0f,  // 6
+       1.0f,  1.0f,  1.0f,  0.5f,  1.0f,  0.0f,  1.0f,  1.0f,  1.0f, 1.0f, 1.0f,  // 7
     });
     indexBuffer.AddRange(new uint[]
     {
@@ -375,11 +382,21 @@ internal class Program
     VaoPointers();
     ShaderPrg.Use();
 
-    // Shared shader uniforms.
+    // Shared shader uniforms - matrices.
     ShaderPrg.TrySetUniform("view", tb.View);
     ShaderPrg.TrySetUniform("projection", tb.Projection);
 
-    // Texture.
+    // Shared shader uniforms - Phong shading.
+    ShaderPrg.TrySetUniform("lightColor", 1.0f, 1.0f, 1.0f);
+    ShaderPrg.TrySetUniform("lightPosition", -8.0f, 8.0f, 8.0f);
+    ShaderPrg.TrySetUniform("eyePosition", tb.Eye);
+    ShaderPrg.TrySetUniform("Ka", 0.1f);
+    ShaderPrg.TrySetUniform("Kd", 0.7f);
+    ShaderPrg.TrySetUniform("Ks", 0.3f);
+    ShaderPrg.TrySetUniform("shininess", 60.0f);
+    ShaderPrg.TrySetUniform("usePhong", usePhong);
+
+    // Shared shader uniforms - Texture.
     if (texture == null || !texture.IsValid())
       useTexture = false;
     ShaderPrg.TrySetUniform("useTexture", useTexture);
@@ -470,6 +487,13 @@ internal class Program
         SetWindowTitle();
         break;
 
+      case Key.I:
+        // Toggle Phong shading.
+        usePhong = !usePhong;
+         Util.Util.Message("Phong shading: " + (usePhong ? "on" : "off"));
+        SetWindowTitle();
+        break;
+
       case Key.P:
         // Reset view.
         if (tb != null)
@@ -505,6 +529,7 @@ internal class Program
       case Key.F1:
         // Help.
         Util.Util.Message("T           toggle texture", true);
+        Util.Util.Message("I           toggle Phong shading", true);
         Util.Util.Message("P           toggle perspective", true);
         Util.Util.Message("C           camera reset", true);
         Util.Util.Message("Left, Right rotate the object", true);
