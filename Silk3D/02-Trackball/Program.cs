@@ -383,7 +383,7 @@ internal class Program
     if (texture == null || !texture.IsValid())
       useTexture = false;
     ShaderPrg.TrySetUniform("useTexture", useTexture);
-    ShaderPrg.TrySetUniform("texture", 0);
+    ShaderPrg.TrySetUniform("tex", 0);
     if (useTexture)
       texture?.Bind(Gl);
 

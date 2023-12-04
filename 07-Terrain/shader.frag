@@ -15,13 +15,13 @@ uniform float shininess;
 uniform bool usePhong;
 
 uniform bool useTexture;
-uniform sampler2D texture;
+uniform sampler2D tex;
 
 out vec4 FragColor;
 
 void main()
 {
-  vec4 diffuseColor = useTexture ? texture2D(texture, fTxt) : vec4(fColor, 1.0);
+  vec4 diffuseColor = useTexture ? texture(tex, fTxt) : vec4(fColor, 1.0);
 
   if (usePhong)
   {
