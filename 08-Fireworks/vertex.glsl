@@ -4,6 +4,7 @@ layout (location = 0) in vec3 vPos;
 layout (location = 1) in vec3 vColor;
 layout (location = 2) in vec3 vNormal;
 layout (location = 3) in vec2 vTxt;
+layout (location = 4) in float vSize;
 
 uniform mat4 model;
 uniform mat4 view;
@@ -21,6 +22,9 @@ void main()
 
     // View- and then the projection-transform.
     gl_Position = projection * view * fWorld;
+
+    // Point size.
+    gl_PointSize = vSize;
 
     // Normal in the world space (not entirely correct).
     fNormal = normalize(vec3(model * vec4(vNormal, 0.0)));

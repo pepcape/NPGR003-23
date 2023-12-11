@@ -171,7 +171,7 @@ internal class Program
 
   private static string WindowTitle()
   {
-    StringBuilder sb = new("02-Trackball");
+    StringBuilder sb = new("07-Terrain");
     if (tb != null)
     {
       sb.Append(tb.UsePerspective ? ", perspective" : ", orthographic");

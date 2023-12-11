@@ -12,7 +12,7 @@ using Util;
 // ReSharper disable InconsistentNaming
 // ReSharper disable FieldCanBeMadeReadOnly.Local
 
-namespace _07_Terrain;
+namespace _08_Fireworks;
 
 using Vector3 = Vector3D<float>;
 using Matrix4 = Matrix4X4<float>;
@@ -25,65 +25,212 @@ public class Options
   [Option('h', "height", Required = false, Default = 600, HelpText = "Window height in pixels.")]
   public int WindowHeight { get; set; } = 600;
 
+  [Option('p', "particles", Required = false, Default = 2000, HelpText = "Number of particles.")]
+  public int particels { get; set; } = 2000;
+
   [Option('t', "texture", Required = false, Default = ":check:", HelpText = "User-defined texture.")]
   public string TextureFile { get; set; } = ":check:";
 }
 
 /// <summary>
-/// Single object = sequence of primitives of the same type (point, line, triangle).
+/// Single particle.
 /// </summary>
-class Object
+class Particle
 {
-  public Object() => Reset();
+  /// <summary>
+  /// Global rotation axis (all particles rotate around the same axis).
+  /// </summary>
+  public static Vector3 AxisDirection;
 
   /// <summary>
-  /// Buffer id. Not used here as we have only one shared buffer.
+  /// Create a new particle.
   /// </summary>
-  public uint BufferId { get; set; }
-
-  public PrimitiveType Type { get; set; } = PrimitiveType.Triangles;
-
-  /// <summary>
-  /// Start of the object in the index buffer (in indices).
-  /// </summary>
-  public int BufferOffset { get; set; }
-
-  /// <summary>
-  /// Number of indices (should be multiple of two for lines, multiple of three for triangles, multiple of four for quads).
-  /// </summary>
-  public int Indices { get; set; }
+  public Particle(double now) => Reset(now);
 
   /// <summary>
   /// World space coordinates of the object's center.
   /// </summary>
-  public Vector3 Center { get; private set; }
+  public Vector3 Position { get; private set; }
 
   /// <summary>
-  /// Object-to-world (local-to-world) transformation.
+  /// Current RGB color.
   /// </summary>
-  public Matrix4 ModelTransform { get; private set; }
+  public Vector3 Color { get; private set; }
 
-  public void Reset()
+  /// <summary>
+  /// Current point size in pixels.
+  /// </summary>
+  public float Size { get; private set; }
+
+  /// <summary>
+  /// Rotation velocity in radians per second.
+  /// </summary>
+  public double Velocity { get; private set; }
+
+  /// <summary>
+  /// Current age (time-to-death).
+  /// </summary>
+  public double Age { get; set; }
+
+  /// <summary>
+  /// Last simulated time in seconds.
+  /// </summary>
+  private double SimulatedTime;
+
+  /// <summary>
+  /// Rotate the particle using the given angle in radians.
+  /// </summary>
+  /// <param name="angle"></param>
+  public void Rotate (double angle)
   {
-    Center = Vector3.Zero;
-    ModelTransform = Matrix4.Identity;
+    var m = Matrix3X3.CreateFromAxisAngle<float>(AxisDirection, (float)angle);
+    Position *= m;
   }
-
-  public void Translate(Vector3 t)
+  public void Reset(double now)
   {
-    Center += t;
-    Matrix4 translation = Matrix4X4.CreateTranslation(t);
-    ModelTransform *= translation;
+    Position = Vector3.Zero;
+    Color = new Vector3(1.0f, 0.7f, 0.5f);
+    Size = 3.0f;
+    Velocity = 0.6f;
+    Age = 5.5;
+    SimulatedTime = now;
   }
 
   /// <summary>
-  /// Rotate the object around its center.
+  /// Simulate one step in time.
   /// </summary>
-  /// <param name="angle">Angle in radians.</param>
-  public void Rotate(float angle)
+  /// <param name="time">Target time to simulate to (in seconds).</param>
+  /// <returns></returns>
+  public bool SimulateTo (double time)
   {
-    Matrix4 rotation = Matrix4X4.CreateFromYawPitchRoll(angle, -0.414141414f * angle, 0.3333333f * angle);
-    ModelTransform *= Matrix4X4.CreateTranslation(-Center) * rotation * Matrix4X4.CreateTranslation(Center);
+    if (time <= SimulatedTime)
+      return true;
+
+    double dt = time - SimulatedTime;
+    SimulatedTime = time;
+
+    Age -= dt;
+    if (Age <= 0.0)
+      return false;
+
+    // Rotate the particle.
+    Rotate(dt * Velocity);
+
+    // TODO: change particle color.
+
+    // TODO: change particle size.
+
+    return true;
+  }
+
+  public void FillBuffer (float[] buffer, ref int i)
+  {
+    // offset  0: Position
+    buffer[i++] = Position.X;
+    buffer[i++] = Position.Y;
+    buffer[i++] = Position.Z;
+
+    // offset  3: Color
+    buffer[i++] = Color.X;
+    buffer[i++] = Color.Y;
+    buffer[i++] = Color.Z;
+
+    // offset  6: Normal
+    buffer[i++] = 0.0f;
+    buffer[i++] = 1.0f;
+    buffer[i++] = 0.0f;
+
+    // offset  9: Txt coordinates
+    buffer[i++] = 0.5f;
+    buffer[i++] = 0.5f;
+
+    // offset 11: Point size
+    buffer[i++] = Size;
+  }
+}
+
+public class Simulation
+{
+  /// <summary>
+  /// Dynamic array of all current particles.
+  /// </summary>
+  private List<Particle> particles = new();
+
+  /// <summary>
+  /// Particle number limit.
+  /// </summary>
+  private int MaxParticles;
+
+  /// <summary>
+  /// Last simulated time in seconds.
+  /// </summary>
+  private double SimulatedTime;
+
+  /// <summary>
+  /// Number of particles generated in one second.
+  /// </summary>
+  private double ParticleRate = 5000.0;
+  public Simulation (double now, double particleRate, int maxParticles, int initParticles)
+  {
+    SimulatedTime = now;
+    ParticleRate = particleRate;
+    MaxParticles = maxParticles;
+    Generate(initParticles);
+  }
+
+  private void Generate(int number)
+  {
+    if (number <= 0)
+      return;
+
+    while (number-- > 0)
+    {
+      // Generate one new particle.
+      particles.Add(new Particle(SimulatedTime));
+    }
+  }
+
+  public void SimulateTo(double time)
+  {
+    if (time <= SimulatedTime)
+      return;
+
+    double dt = time - SimulatedTime;
+    SimulatedTime = time;
+
+    // 1. Simulate all the particles.
+    List<int> toRemove = new();
+    for (int i = 0; i < particles.Count; i++)
+    {
+      // Simulate one particle.
+      if (!particles[i].SimulateTo(time))
+      {
+        // Delete the particle.
+        toRemove.Add(i);
+      }
+    }
+
+    // 2. Remove the dead ones.
+    foreach (var i in toRemove)
+      particles.RemoveAt(i);
+
+    // 3. Generate new ones if there is space.
+    int toGenerate = Math.Min(MaxParticles - particles.Count, (int)(dt * ParticleRate));
+    Generate(toGenerate);
+  }
+
+  /// <summary>
+  /// [Re]fills the vertex buffer with current data.
+  /// </summary>
+  /// <param name="buffer">Vertex buffer array.</param>
+  /// <returns>Number of particles to update and render.</returns>
+  public int FillBuffer (float[] buffer)
+  {
+    int i = 0;
+    foreach (var p in particles)
+      p.FillBuffer(buffer, ref i);
+
+    return particles.Count;
   }
 }
 
@@ -107,16 +254,22 @@ internal class Program
   private static float sceneDiameter = 4.0f;
 
   // Global 3D data buffer.
-  private const int MAX_INDICES = 4096;
-  private const int MAX_VERTICES = 4096;
-  private const int VERTEX_SIZE = 11;
+  private const int MAX_VERTICES = 65536;
+  private const int VERTEX_SIZE = 12;     // x, y, z, R, G, B, Nx, Ny, Nz, s, t, size
 
-  private static List<uint> indexBuffer = new(MAX_INDICES);
-  private static List<float> vertexBuffer = new(MAX_VERTICES * VERTEX_SIZE);
+  /// <summary>
+  /// Current dynamic vertex buffer in .NET memory.
+  /// Better idea is to store the buffer on GPU and update it every frame.
+  /// </summary>
+  private static float[] vertexBuffer = new float[MAX_VERTICES * VERTEX_SIZE];
+
+  /// <summary>
+  /// Current number of vertices to draw.
+  /// </summary>
+  private static int vertices = 0;
 
   private static BufferObject<float>? Vbo;
-  private static BufferObject<uint>? Ebo;
-  private static VertexArrayObject<float, uint>? Vao;
+  private static VertexArrayObject<float>? Vao;
 
   // Texture.
   private static Util.Texture? texture;
@@ -130,48 +283,17 @@ internal class Program
   // Shader program.
   private static ShaderProgram? ShaderPrg;
 
-  // 2D objects - referring to the shared buffer.
-  private static List<Object> Objects = new();
+  private static DateTime now = DateTime.Now;
 
-  private static Object LastObject => Objects[^1];
-
-  /// <summary>
-  /// Adds a new object (pristine copy of the 1st one).
-  /// </summary>
-  private static void NewObject()
-  {
-    lock (renderLock)
-    {
-      Objects.Add(new()
-      {
-        BufferId = 0,
-        Type = Objects[0].Type,
-        BufferOffset = Objects[0].BufferOffset,
-        Indices = Objects[0].Indices
-      });
-    }
-    SetWindowTitle();
-  }
-
-  /// <summary>
-  /// Removes the youngest object (until it is the 1st one).
-  /// </summary>
-  private static void DeleteObject ()
-  {
-    if (Objects.Count > 1)
-      lock (renderLock)
-      {
-        Objects.RemoveAt(Objects.Count - 1);
-        SetWindowTitle();
-      }
-  }
+  // Particle simulation system.
+  private static Simulation? sim;
 
   //////////////////////////////////////////////////////
   // Application.
 
   private static string WindowTitle()
   {
-    StringBuilder sb = new("02-Trackball");
+    StringBuilder sb = new("08-Fireworks");
     if (tb != null)
     {
       sb.Append(tb.UsePerspective ? ", perspective" : ", orthographic");
@@ -223,10 +345,11 @@ internal class Program
   {
     Debug.Assert(Vao != null);
     Vao.Bind();
-    Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, VERTEX_SIZE, 0);
-    Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, VERTEX_SIZE, 3);
-    Vao.VertexAttributePointer(2, 3, VertexAttribPointerType.Float, VERTEX_SIZE, 6);
-    Vao.VertexAttributePointer(3, 2, VertexAttribPointerType.Float, VERTEX_SIZE, 9);
+    Vao.VertexAttributePointer(0, 3, VertexAttribPointerType.Float, VERTEX_SIZE,  0);
+    Vao.VertexAttributePointer(1, 3, VertexAttribPointerType.Float, VERTEX_SIZE,  3);
+    Vao.VertexAttributePointer(2, 3, VertexAttribPointerType.Float, VERTEX_SIZE,  6);
+    Vao.VertexAttributePointer(3, 2, VertexAttribPointerType.Float, VERTEX_SIZE,  9);
+    Vao.VertexAttributePointer(4, 1, VertexAttribPointerType.Float, VERTEX_SIZE, 11);
   }
 
   private static void OnLoad()
@@ -255,51 +378,21 @@ internal class Program
     //------------------------------------------------------
     // Render data.
 
-    // How to allocate 2000 vertices (all floats will be 0.0f)
-    //vertexBuffer.AddRange(new float[2000 * VERTEX_SIZE]);
-
-    // Init: triangle mesh with 9 vertices and 8 triangles
-    vertexBuffer.AddRange(new[]
-    {
-    //  x,     y,     z,     R,     G,     B,     Nx,    Ny,    Nz,   s,    t
-      -1.0f,  0.0f,  1.0f,  1.0f,  1.0f,  1.0f, -0.3f,  1.0f,  0.6f, 0.0f, 0.0f,  // 0
-       0.0f,  0.1f,  1.0f,  0.5f,  0.8f,  1.0f,  0.0f,  1.0f,  0.6f, 0.5f, 0.0f,  // 1
-       1.0f,  0.0f,  1.0f,  0.0f,  0.6f,  1.0f,  0.3f,  1.0f,  0.6f, 1.0f, 0.0f,  // 2
-      -1.0f,  0.1f,  0.0f,  0.0f,  0.2f,  0.2f, -0.6f,  1.0f,  0.0f, 0.0f, 0.5f,  // 3
-       0.0f,  0.3f,  0.0f,  0.2f,  0.4f,  0.4f,  0.0f,  1.0f, -0.1f, 0.5f, 0.5f,  // 4
-       1.0f,  0.2f,  0.0f,  0.9f,  0.6f,  0.6f,  0.6f,  1.0f,  0.0f, 1.0f, 0.5f,  // 5
-      -1.0f,  0.2f, -1.0f,  1.0f,  0.0f,  0.2f, -0.4f,  1.0f, -0.5f, 0.0f, 1.0f,  // 6
-       0.0f,  0.3f, -1.0f,  0.7f,  0.5f,  0.6f,  0.0f,  1.0f, -0.5f, 0.5f, 1.0f,  // 7
-       1.0f,  0.2f, -1.0f,  0.4f,  1.0f,  0.0f,  0.4f,  1.0f, -0.5f, 1.0f, 1.0f,  // 8
-    });
-    indexBuffer.AddRange(new uint[]
-    {
-      // 8 triangles
-      0, 1, 4, 0, 4, 3,
-      1, 2, 5, 1, 5, 4,
-      3, 4, 7, 3, 7, 6,
-      4, 5, 8, 4, 8, 7,
-    });
-
-    // Create the first object (the rest will be cloned from it).
+    // Init the rendering data.
     lock (renderLock)
     {
-      Objects.Add(new()
-      {
-        BufferId = 0,
-        Type = PrimitiveType.Triangles,
-        BufferOffset = 0,
-        Indices = 24
-      });
+      // Initialize the simulation object and fill the VB.
+      Particle.AxisDirection = Vector3.UnitZ;
+      sim = new Simulation(0.0, 4000.0, 2000, 500);
+      vertices = sim.FillBuffer(vertexBuffer);
 
       // Vertex Array Object = Vertex buffer + Index buffer.
-      Ebo = new BufferObject<uint>(Gl, indexBuffer.ToArray(), BufferTargetARB.ElementArrayBuffer);
-      Vbo = new BufferObject<float>(Gl, vertexBuffer.ToArray(), BufferTargetARB.ArrayBuffer);
-      Vao = new VertexArrayObject<float, uint>(Gl, Vbo, Ebo);
+      Vbo = new BufferObject<float>(Gl, vertexBuffer, BufferTargetARB.ArrayBuffer);
+      Vao = new VertexArrayObject<float>(Gl, Vbo);
       VaoPointers();
 
       // Initialize the shaders.
-      ShaderPrg = new ShaderProgram(Gl, "shader.vert", "shader.frag");
+      ShaderPrg = new ShaderProgram(Gl, "vertex.glsl", "fragment.glsl");
 
       // Initialize the texture.
       if (textureFile.StartsWith(":"))
@@ -378,6 +471,8 @@ internal class Program
 
     lock (renderLock)
     {
+      // Simulation the particle system.
+
       // Rendering properties (set in every frame for clarity).
       Gl.Enable(GLEnum.DepthTest);
       Gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
@@ -390,6 +485,7 @@ internal class Program
       // Shared shader uniforms - matrices.
       ShaderPrg.TrySetUniform("view", tb.View);
       ShaderPrg.TrySetUniform("projection", tb.Projection);
+      ShaderPrg.TrySetUniform("model", Matrix4.Identity);
 
       // Shared shader uniforms - Phong shading.
       ShaderPrg.TrySetUniform("lightColor", 1.0f, 1.0f, 1.0f);
@@ -409,14 +505,16 @@ internal class Program
       if (useTexture)
         texture?.Bind(Gl);
 
-      // Draw the objects.
-      foreach (var o in Objects)
-      {
-        // Object-specific uniforms.
-        ShaderPrg.TrySetUniform("model", o.ModelTransform);
+      // Draw the particle system.
+      vertices = (sim != null) ? sim.FillBuffer(vertexBuffer) : 0;
 
-        // Draw the batch.
-        Gl.DrawElements(o.Type, (uint)o.Indices, DrawElementsType.UnsignedInt, (void*)(o.BufferOffset * sizeof(float)));
+      if (Vbo != null &&
+          vertices > 0)
+      {
+        Vbo.UpdateData(vertexBuffer, 0, vertices * VERTEX_SIZE);
+
+        // Draw the batch of points.
+        Gl.DrawArrays((GLEnum)PrimitiveType.Points, 0, (uint)vertices);
       }
     }
 
@@ -424,24 +522,6 @@ internal class Program
     Gl.UseProgram(0);
     if (useTexture)
       Gl.BindTexture(TextureTarget.Texture2D, 0);
-  }
-
-  /// <summary>
-  /// Demo function - shows how to update one vertex of the triangle mesh.
-  /// </summary>
-  private static unsafe void UpdateVertex(float dy)
-  {
-    lock (renderLock)
-    {
-      // I'm going to change the y coordinate (offset = 1) of the middle vertex (index = 4)...
-      vertexBuffer[4 * VERTEX_SIZE + 1] += dy;
-
-      // ...but I'm changing the whole vertex data (11 floats)
-      var span = CollectionsMarshal.AsSpan(vertexBuffer);
-
-      Vbo?.UpdateData(span, 4 * VERTEX_SIZE, VERTEX_SIZE);
-      // This is not the nicest solution, I'd better use float[] and pass it directly to UpdateData()...
-    }
   }
 
   /// <summary>
@@ -493,14 +573,6 @@ internal class Program
         ctrlDown++;
         break;
 
-      case Key.Home:
-        // Reset object transformation.
-        if (Objects.Count > 0)
-        {
-          LastObject.Reset();
-        }
-        break;
-
       case Key.T:
         // Toggle texture.
         useTexture = !useTexture;
@@ -536,43 +608,16 @@ internal class Program
         }
         break;
 
-      case Key.Up:
-        // Move the middle vertex a little bit higher.
-        UpdateVertex(0.1f);
-        break;
-
-      case Key.Down:
-        // Move the middle vertex a little bit lower.
-        UpdateVertex(-0.1f);
-        break;
-
-      case Key.Left:
-        if (Objects.Count > 0)
-        {
-          LastObject.Rotate(-0.1f);
-        }
-        break;
-
-      case Key.Right:
-        if (Objects.Count > 0)
-        {
-          LastObject.Rotate(0.1f);
-        }
-        break;
-
       case Key.F1:
         // Help.
         Util.Util.Message("T           toggle texture", true);
         Util.Util.Message("I           toggle Phong shading", true);
         Util.Util.Message("P           toggle perspective", true);
         Util.Util.Message("C           camera reset", true);
-        Util.Util.Message("Up, Down    update the vertex", true);
-        Util.Util.Message("Left, Right rotate the object", true);
         Util.Util.Message("Home        reset the object", true);
         Util.Util.Message("F1          print help", true);
         Util.Util.Message("Esc         quit the program", true);
         Util.Util.Message("Mouse.left  Trackball rotation", true);
-        Util.Util.Message("Mouse.right drag current object", true);
         Util.Util.Message("Mouse.wheel zoom in/out", true);
         break;
 
@@ -687,10 +732,10 @@ internal class Program
 
       if (newX != currentX || newY != currentY)
       {
-        if (Objects.Count > 0)
-        {
-          LastObject.Translate(new((newX - currentX) * mouseCx, (newY - currentY) * mouseCy, 0.0f));
-        }
+        //if (Objects.Count > 0)
+        //{
+        //  LastObject.Translate(new((newX - currentX) * mouseCx, (newY - currentY) * mouseCy, 0.0f));
+        //}
 
         currentX = newX;
         currentY = newY;
