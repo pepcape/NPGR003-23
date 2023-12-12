@@ -568,7 +568,12 @@ internal class Program
         {
           window.VSync = !window.VSync;
           if (window.VSync)
+          {
+            Ut.Message("VSync on");
             fps.Reset();
+          }
+          else
+            Ut.Message("VSync off");
         }
         break;
 
