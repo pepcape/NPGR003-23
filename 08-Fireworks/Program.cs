@@ -205,7 +205,7 @@ public class Simulation
   /// <summary>
   /// Number of particles generated in one second.
   /// </summary>
-  private double ParticleRate = 1000.0;
+  public double ParticleRate { get; set; }
 
   /// <summary>
   /// Initialize a new particle simulator.
@@ -213,7 +213,7 @@ public class Simulation
   /// <param name="now">Current real time in seconds.</param>
   /// <param name="particleRate">Maximum particle generation rate in particles per second.</param>
   /// <param name="maxParticles">Maximum number of particles in the system (can be slightly exceeded).</param>
-  /// <param name="initParticles">Inital number of particles (the rest will be generated later).</param>
+  /// <param name="initParticles">Initial number of particles (the rest will be generated later).</param>
   public Simulation (double now, double particleRate, int maxParticles, int initParticles)
   {
     SimulatedTime = now;
@@ -356,7 +356,7 @@ internal class Program
 
     if (sim != null)
     {
-      sb.Append($" [{sim.Particles} of {sim.MaxParticles}]");
+      sb.Append(string.Format(CultureInfo.InvariantCulture, " [{0} of {1}], rate={2:f0}", sim.Particles, sim.MaxParticles, sim.ParticleRate));
     }
 
     sb.Append(string.Format(CultureInfo.InvariantCulture, ", fps={0:f1}", fps.Fps));
@@ -723,6 +723,24 @@ internal class Program
         }
         break;
 
+      case Key.Up:
+        // Increase particle generation rate.
+        if (sim != null)
+        {
+          sim.ParticleRate *= 1.1;
+          SetWindowTitle();
+        }
+        break;
+
+      case Key.Down:
+        // Decrease particle generation rate.
+        if (sim != null)
+        {
+          sim.ParticleRate /= 1.1;
+          SetWindowTitle();
+        }
+        break;
+
       case Key.F1:
         // Help.
         Util.Util.Message("T           toggle texture", true);
@@ -730,7 +748,8 @@ internal class Program
         Util.Util.Message("P           toggle perspective", true);
         Util.Util.Message("V           toggle VSync", true);
         Util.Util.Message("C           camera reset", true);
-        Util.Util.Message("Home        reset the object", true);
+        Util.Util.Message("R           reset the simulation", true);
+        Util.Util.Message("Up, Down    change particle generation rate", true);
         Util.Util.Message("F1          print help", true);
         Util.Util.Message("Esc         quit the program", true);
         Util.Util.Message("Mouse.left  Trackball rotation", true);
