@@ -504,7 +504,7 @@ internal class Program
         tb.KeyDown(arg1, arg2, arg3))
     {
       SetWindowTitle();
-      return;
+      //return;
     }
 
     switch (arg2)
