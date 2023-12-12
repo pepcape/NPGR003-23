@@ -28,6 +28,9 @@ public class Options
   [Option('p', "particles", Required = false, Default = 2000, HelpText = "Number of particles.")]
   public int Particles { get; set; } = 2000;
 
+  [Option('r', "rate", Required = false, Default = 1000.0, HelpText = "Particle generation rate per second.")]
+  public double ParticleRate { get; set; } = 1000.0;
+
   [Option('t', "texture", Required = false, Default = ":check:", HelpText = "User-defined texture.")]
   public string TextureFile { get; set; } = ":check:";
 }
@@ -91,10 +94,18 @@ class Particle
 
   public void Reset(double now)
   {
-    Position = new Vector3(
-      (float)(2.0 * rnd.NextDouble() - 1.0),
-      (float)(2.0 * rnd.NextDouble() - 1.0),
-      (float)(0.6 * rnd.NextDouble() - 0.3));
+    double x, y;
+    do
+    {
+      x = rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 2.0;
+      y = rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 2.0;
+    }
+    while (x * x + y * y > 1.0);
+    double z = rnd.NextDouble() + rnd.NextDouble() - 1.0;
+    double r = Math.Sqrt(x * x + y * y);
+    z *= 0.3 * Math.Exp(-4.0 * r * r);
+
+    Position = new Vector3((float)x, (float)y, (float)z);
 
     Color = new Vector3(
       (float)(0.2 + 0.8 * rnd.NextDouble()),
@@ -103,7 +114,7 @@ class Particle
 
     Size = 3.0f;
 
-    Velocity = 0.2 + 0.1 * rnd.NextDouble();
+    Velocity = (1.2 - r) * (0.1 + 0.07 * rnd.NextDouble());
 
     Age = 6.0 + 4.0 * rnd.NextDouble();
 
@@ -187,7 +198,7 @@ public class Simulation
   /// <summary>
   /// Number of particles generated in one second.
   /// </summary>
-  private double ParticleRate = 5000.0;
+  private double ParticleRate = 1000.0;
 
   /// <summary>
   /// Initialize a new particle simulator.
@@ -270,13 +281,14 @@ public class Simulation
 
 internal class Program
 {
+  // System objects.
   private static IWindow? window;
   private static GL? Gl;
 
   // VB locking (too lousy?)
   private static object renderLock = new();
 
-  // Window.
+  // Window size.
   private static float width;
   private static float height;
 
@@ -288,7 +300,7 @@ internal class Program
 
   // Scene dimensions.
   private static Vector3 sceneCenter = Vector3.Zero;
-  private static float sceneDiameter = 4.0f;
+  private static float sceneDiameter = 2.0f;
 
   // Global 3D data buffer.
   private const int MAX_VERTICES = 65536;
@@ -306,6 +318,7 @@ internal class Program
   private static int vertices = 0;
 
   public static int maxParticles = 0;
+  public static double particleRate = 1000.0;
 
   private static BufferObject<float>? Vbo;
   private static VertexArrayObject<float>? Vao;
@@ -391,7 +404,8 @@ internal class Program
         window.Resize  += OnResize;
 
         textureFile = o.TextureFile;
-        maxParticles = o.Particles;
+        maxParticles = Math.Min(MAX_VERTICES, o.Particles);
+        particleRate = o.ParticleRate;
 
         window.Run();
       });
@@ -439,7 +453,7 @@ internal class Program
     {
       // Initialize the simulation object and fill the VB.
       Particle.AxisDirection = Vector3.UnitZ;
-      sim = new Simulation(nowSeconds, 4000.0, maxParticles, maxParticles / 4);
+      sim = new Simulation(nowSeconds, particleRate, maxParticles, maxParticles / 4);
       vertices = sim.FillBuffer(vertexBuffer);
 
       // Vertex Array Object = Vertex buffer + Index buffer.
@@ -628,7 +642,7 @@ internal class Program
         tb.KeyDown(arg1, arg2, arg3))
     {
       SetWindowTitle();
-      return;
+      //return;
     }
 
     switch (arg2)
@@ -685,6 +699,15 @@ internal class Program
           window.VSync = !window.VSync;
           if (window.VSync)
             fps.Reset();
+        }
+        break;
+
+      case Key.R:
+        // Reset the simulator.
+        if (sim != null)
+        {
+          sim.Reset();
+          Util.Util.Message("Simulator reset");
         }
         break;
 
