@@ -37,6 +37,8 @@ public class Options
 /// </summary>
 class Particle
 {
+  private static Random rnd = new((int)DateTime.Now.Ticks);
+
   /// <summary>
   /// Global rotation axis (all particles rotate around the same axis).
   /// </summary>
@@ -86,13 +88,25 @@ class Particle
     var m = Matrix3X3.CreateFromAxisAngle<float>(AxisDirection, (float)angle);
     Position *= m;
   }
+
   public void Reset(double now)
   {
-    Position = Vector3.Zero;
-    Color = new Vector3(1.0f, 0.7f, 0.5f);
+    Position = new Vector3(
+      (float)(2.0 * rnd.NextDouble() - 1.0),
+      (float)(2.0 * rnd.NextDouble() - 1.0),
+      (float)(0.6 * rnd.NextDouble() - 0.3));
+
+    Color = new Vector3(
+      (float)(0.2 + 0.8 * rnd.NextDouble()),
+      (float)(0.2 + 0.8 * rnd.NextDouble()),
+      (float)(0.2 + 0.8 * rnd.NextDouble()));
+
     Size = 3.0f;
-    Velocity = 0.6f;
-    Age = 5.5;
+
+    Velocity = 0.2 + 0.1 * rnd.NextDouble();
+
+    Age = 6.0 + 4.0 * rnd.NextDouble();
+
     SimulatedTime = now;
   }
 
@@ -116,9 +130,13 @@ class Particle
     // Rotate the particle.
     Rotate(dt * Velocity);
 
-    // TODO: change particle color.
+    // Change particle color.
+    if (Age < 4.0)
+      Color *= (float)Math.Pow(0.8, dt);
 
-    // TODO: change particle size.
+    // Change particle size.
+    if (Age < 4.0)
+      Size *= (float)Math.Pow(0.8, dt);
 
     return true;
   }
@@ -170,6 +188,14 @@ public class Simulation
   /// Number of particles generated in one second.
   /// </summary>
   private double ParticleRate = 5000.0;
+
+  /// <summary>
+  /// Initialize a new particle simulator.
+  /// </summary>
+  /// <param name="now">Current real time in seconds.</param>
+  /// <param name="particleRate">Maximum particle generation rate in particles per second.</param>
+  /// <param name="maxParticles">Maximum number of particles in the system (can be slightly exceeded).</param>
+  /// <param name="initParticles">Inital number of particles (the rest will be generated later).</param>
   public Simulation (double now, double particleRate, int maxParticles, int initParticles)
   {
     SimulatedTime = now;
@@ -186,7 +212,7 @@ public class Simulation
     while (number-- > 0)
     {
       // Generate one new particle.
-      particles.Add(new Particle(SimulatedTime));
+      particles.Add(new(SimulatedTime));
     }
   }
 
@@ -231,6 +257,14 @@ public class Simulation
       p.FillBuffer(buffer, ref i);
 
     return particles.Count;
+  }
+
+  /// <summary>
+  /// Removes all the particles.
+  /// </summary>
+  public void Reset()
+  {
+    particles.Clear();
   }
 }
 
@@ -505,6 +539,7 @@ internal class Program
       Gl.Enable(GLEnum.DepthTest);
       Gl.PolygonMode(GLEnum.FrontAndBack, GLEnum.Fill);
       Gl.Disable(GLEnum.CullFace);
+      Gl.Enable(GLEnum.VertexProgramPointSize);
 
       // Draw the scene (set of Object-s).
       VaoPointers();
