@@ -25,8 +25,8 @@ public class Options
   [Option('h', "height", Required = false, Default = 600, HelpText = "Window height in pixels.")]
   public int WindowHeight { get; set; } = 600;
 
-  [Option('p', "particles", Required = false, Default = 2000, HelpText = "Number of particles.")]
-  public int Particles { get; set; } = 2000;
+  [Option('p', "particles", Required = false, Default = 10000, HelpText = "Maximum number of particles.")]
+  public int Particles { get; set; } = 10000;
 
   [Option('r', "rate", Required = false, Default = 1000.0, HelpText = "Particle generation rate per second.")]
   public double ParticleRate { get; set; } = 1000.0;
@@ -97,22 +97,24 @@ class Particle
     double x, y;
     do
     {
-      x = rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 2.0;
-      y = rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 2.0;
+      x = 0.5 * (rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() +
+                 rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 3.0);
+      y = 0.5 * (rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() +
+                 rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 3.0);
     }
     while (x * x + y * y > 1.0);
-    double z = rnd.NextDouble() + rnd.NextDouble() - 1.0;
+    double z = 0.6 * (rnd.NextDouble() + rnd.NextDouble() + rnd.NextDouble() - 1.5);
     double r = Math.Sqrt(x * x + y * y);
     z *= 0.3 * Math.Exp(-4.0 * r * r);
 
     Position = new Vector3((float)x, (float)y, (float)z);
 
     Color = new Vector3(
-      (float)(0.2 + 0.8 * rnd.NextDouble()),
-      (float)(0.2 + 0.8 * rnd.NextDouble()),
-      (float)(0.2 + 0.8 * rnd.NextDouble()));
+      (float)(0.3 + 0.7 * rnd.NextDouble()),
+      (float)(0.3 + 0.7 * rnd.NextDouble()),
+      (float)(0.3 + 0.7 * rnd.NextDouble()));
 
-    Size = 3.0f;
+    Size = 2.0f;
 
     Velocity = (1.2 - r) * (0.1 + 0.07 * rnd.NextDouble());
 
@@ -142,11 +144,11 @@ class Particle
     Rotate(dt * Velocity);
 
     // Change particle color.
-    if (Age < 4.0)
+    if (Age < 6.0)
       Color *= (float)Math.Pow(0.8, dt);
 
     // Change particle size.
-    if (Age < 4.0)
+    if (Age < 5.0)
       Size *= (float)Math.Pow(0.8, dt);
 
     return true;
@@ -186,9 +188,14 @@ public class Simulation
   private List<Particle> particles = new();
 
   /// <summary>
+  /// Actual number of particles.
+  /// </summary>
+  public int Particles => particles.Count;
+
+  /// <summary>
   /// Particle number limit.
   /// </summary>
-  private int MaxParticles;
+  public int MaxParticles { get; private set; }
 
   /// <summary>
   /// Last simulated time in seconds.
@@ -300,7 +307,7 @@ internal class Program
 
   // Scene dimensions.
   private static Vector3 sceneCenter = Vector3.Zero;
-  private static float sceneDiameter = 2.0f;
+  private static float sceneDiameter = 1.5f;
 
   // Global 3D data buffer.
   private const int MAX_VERTICES = 65536;
@@ -346,6 +353,11 @@ internal class Program
   private static string WindowTitle()
   {
     StringBuilder sb = new("08-Fireworks");
+
+    if (sim != null)
+    {
+      sb.Append($" [{sim.Particles} of {sim.MaxParticles}]");
+    }
 
     sb.Append(string.Format(CultureInfo.InvariantCulture, ", fps={0:f1}", fps.Fps));
     if (window != null &&
@@ -453,7 +465,7 @@ internal class Program
     {
       // Initialize the simulation object and fill the VB.
       Particle.AxisDirection = Vector3.UnitZ;
-      sim = new Simulation(nowSeconds, particleRate, maxParticles, maxParticles / 4);
+      sim = new Simulation(nowSeconds, particleRate, maxParticles, maxParticles / 10);
       vertices = sim.FillBuffer(vertexBuffer);
 
       // Vertex Array Object = Vertex buffer + Index buffer.
