@@ -26,7 +26,7 @@ public class Options
   public int WindowHeight { get; set; } = 600;
 
   [Option('p', "particles", Required = false, Default = 2000, HelpText = "Number of particles.")]
-  public int particels { get; set; } = 2000;
+  public int Particles { get; set; } = 2000;
 
   [Option('t', "texture", Required = false, Default = ":check:", HelpText = "User-defined texture.")]
   public string TextureFile { get; set; } = ":check:";
@@ -211,8 +211,8 @@ public class Simulation
     }
 
     // 2. Remove the dead ones.
-    foreach (var i in toRemove)
-      particles.RemoveAt(i);
+    for (var i = toRemove.Count; --i >= 0; )
+      particles.RemoveAt(toRemove[i]);
 
     // 3. Generate new ones if there is space.
     int toGenerate = Math.Min(MaxParticles - particles.Count, (int)(dt * ParticleRate));
@@ -249,6 +249,9 @@ internal class Program
   // Trackball.
   private static Trackball? tb;
 
+  // FPS counter.
+  private static FPS fps = new();
+
   // Scene dimensions.
   private static Vector3 sceneCenter = Vector3.Zero;
   private static float sceneDiameter = 4.0f;
@@ -268,6 +271,8 @@ internal class Program
   /// </summary>
   private static int vertices = 0;
 
+  public static int maxParticles = 0;
+
   private static BufferObject<float>? Vbo;
   private static VertexArrayObject<float>? Vao;
 
@@ -283,7 +288,7 @@ internal class Program
   // Shader program.
   private static ShaderProgram? ShaderPrg;
 
-  private static DateTime now = DateTime.Now;
+  private static double nowSeconds = FPS.NowInSeconds;
 
   // Particle simulation system.
   private static Simulation? sim;
@@ -294,17 +299,32 @@ internal class Program
   private static string WindowTitle()
   {
     StringBuilder sb = new("08-Fireworks");
+
+    sb.Append(string.Format(CultureInfo.InvariantCulture, ", fps={0:f1}", fps.Fps));
+    if (window != null &&
+        window.VSync)
+      sb.Append(" [VSync]");
+
+    double pps = fps.Pps;
+    if (pps > 0.0)
+      if (pps < 5.0e5)
+        sb.Append(string.Format(CultureInfo.InvariantCulture, ", pps={0:f1}k", pps * 1.0e-3));
+      else
+        sb.Append(string.Format(CultureInfo.InvariantCulture, ", pps={0:f1}m", pps * 1.0e-6));
+
     if (tb != null)
     {
       sb.Append(tb.UsePerspective ? ", perspective" : ", orthographic");
       sb.Append(string.Format(CultureInfo.InvariantCulture, ", zoom={0:f2}", tb.Zoom));
     }
+
     if (useTexture &&
         texture != null &&
         texture.IsValid())
       sb.Append($", txt={texture.name}");
     else
       sb.Append(", no texture");
+
     if (usePhong)
       sb.Append(", Phong shading");
 
@@ -325,6 +345,7 @@ internal class Program
         WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(o.WindowWidth, o.WindowHeight);
         options.Title = WindowTitle();
+        options.VSync = true;
 
         window = Window.Create(options);
         width  = o.WindowWidth;
@@ -336,6 +357,7 @@ internal class Program
         window.Resize  += OnResize;
 
         textureFile = o.TextureFile;
+        maxParticles = o.Particles;
 
         window.Run();
       });
@@ -383,7 +405,7 @@ internal class Program
     {
       // Initialize the simulation object and fill the VB.
       Particle.AxisDirection = Vector3.UnitZ;
-      sim = new Simulation(0.0, 4000.0, 2000, 500);
+      sim = new Simulation(nowSeconds, 4000.0, maxParticles, maxParticles / 4);
       vertices = sim.FillBuffer(vertexBuffer);
 
       // Vertex Array Object = Vertex buffer + Index buffer.
@@ -472,6 +494,12 @@ internal class Program
     lock (renderLock)
     {
       // Simulation the particle system.
+      nowSeconds = FPS.NowInSeconds;
+      if (sim != null)
+      {
+        sim.SimulateTo(nowSeconds);
+        vertices = sim.FillBuffer(vertexBuffer);
+      }
 
       // Rendering properties (set in every frame for clarity).
       Gl.Enable(GLEnum.DepthTest);
@@ -515,6 +543,9 @@ internal class Program
 
         // Draw the batch of points.
         Gl.DrawArrays((GLEnum)PrimitiveType.Points, 0, (uint)vertices);
+
+        // Update Pps.
+        fps.AddPrimitives(vertices);
       }
     }
 
@@ -522,6 +553,10 @@ internal class Program
     Gl.UseProgram(0);
     if (useTexture)
       Gl.BindTexture(TextureTarget.Texture2D, 0);
+
+    // FPS.
+    if (fps.AddFrames())
+      SetWindowTitle();
   }
 
   /// <summary>
@@ -591,7 +626,7 @@ internal class Program
         break;
 
       case Key.P:
-        // Reset view.
+        // Perspective <-> orthographic.
         if (tb != null)
         {
           tb.UsePerspective = !tb.UsePerspective;
@@ -608,11 +643,22 @@ internal class Program
         }
         break;
 
+      case Key.V:
+        // Toggle VSync.
+        if (window != null)
+        {
+          window.VSync = !window.VSync;
+          if (window.VSync)
+            fps.Reset();
+        }
+        break;
+
       case Key.F1:
         // Help.
         Util.Util.Message("T           toggle texture", true);
         Util.Util.Message("I           toggle Phong shading", true);
         Util.Util.Message("P           toggle perspective", true);
+        Util.Util.Message("V           toggle VSync", true);
         Util.Util.Message("C           camera reset", true);
         Util.Util.Message("Home        reset the object", true);
         Util.Util.Message("F1          print help", true);
