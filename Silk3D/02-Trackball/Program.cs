@@ -464,9 +464,9 @@ internal class Program
         // Toggle texture.
         useTexture = !useTexture;
         if (useTexture)
-          Util.Util.Message($"Texture: {texture?.name}");
+          Ut.Message($"Texture: {texture?.name}");
         else
-          Util.Util.Message("Texturing off");
+          Ut.Message("Texturing off");
         SetWindowTitle();
         break;
 
@@ -484,7 +484,7 @@ internal class Program
         if (tb != null)
         {
           tb.Reset();
-          Util.Util.Message("Camera reset");
+          Ut.Message("Camera reset");
         }
         break;
 
@@ -504,16 +504,16 @@ internal class Program
 
       case Key.F1:
         // Help.
-        Util.Util.Message("T           toggle texture", true);
-        Util.Util.Message("P           toggle perspective", true);
-        Util.Util.Message("C           camera reset", true);
-        Util.Util.Message("Left, Right rotate the object", true);
-        Util.Util.Message("Home        reset the object", true);
-        Util.Util.Message("F1          print help", true);
-        Util.Util.Message("Esc         quit the program", true);
-        Util.Util.Message("Mouse.left  Trackball rotation", true);
-        Util.Util.Message("Mouse.right drag current object", true);
-        Util.Util.Message("Mouse.wheel zoom in/out", true);
+        Ut.Message("T           toggle texture", true);
+        Ut.Message("P           toggle perspective", true);
+        Ut.Message("C           camera reset", true);
+        Ut.Message("Left, Right rotate the object", true);
+        Ut.Message("Home        reset the object", true);
+        Ut.Message("F1          print help", true);
+        Ut.Message("Esc         quit the program", true);
+        Ut.Message("Mouse.left  Trackball rotation", true);
+        Ut.Message("Mouse.right drag current object", true);
+        Ut.Message("Mouse.wheel zoom in/out", true);
         break;
 
       case Key.Escape:
@@ -576,7 +576,7 @@ internal class Program
 
     if (btn == MouseButton.Right)
     {
-      Util.Util.MessageInvariant($"Right button down: {mouse.Position}");
+      Ut.MessageInvariant($"Right button down: {mouse.Position}");
 
       // Start dragging.
       dragging = true;
@@ -597,7 +597,7 @@ internal class Program
 
     if (btn == MouseButton.Right)
     {
-      Util.Util.MessageInvariant($"Right button up: {mouse.Position}");
+      Ut.MessageInvariant($"Right button up: {mouse.Position}");
 
       // Stop dragging.
       dragging = false;
@@ -616,7 +616,7 @@ internal class Program
 
     if (mouse.IsButtonPressed(MouseButton.Right))
     {
-      Util.Util.MessageInvariant($"Mouse drag: {xy}");
+      Ut.MessageInvariant($"Mouse drag: {xy}");
     }
 
     // Object dragging.
@@ -648,7 +648,7 @@ internal class Program
   {
     if (btn == MouseButton.Right)
     {
-      Util.Util.Message("Closed by double-click.", true);
+      Ut.Message("Closed by double-click.", true);
       window?.Close();
     }
   }
@@ -667,6 +667,6 @@ internal class Program
     }
 
     // wheel.Y is -1 or 1
-    Util.Util.MessageInvariant($"Mouse scroll: {wheel.Y}");
+    Ut.MessageInvariant($"Mouse scroll: {wheel.Y}");
   }
 }

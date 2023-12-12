@@ -6,7 +6,7 @@ namespace Util;
 /// <summary>
 /// Assorted utilities.
 /// </summary>
-public class Util
+public class Ut
 {
   /// <summary>
   /// How many characters of the previous message should be overwritten.
