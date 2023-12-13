@@ -82,6 +82,112 @@ program, you just install the [Silk.NET NuGet package](https://www.nuget.org/pac
 You can view our sample projects in the
 [Silk3D directory](../Silk3D/README.md) of our repository.
 
+# Pilot project
+There is a pilot project in this GIT directory. We wanted to show a working
+OpenGL ([Silk.NET](https://www.nuget.org/packages/Silk.NET/)) project with
+
+- `Silk.NET.Windowing.Window`-based main program
+  - window title is using for simple realtime status (see `Program.WindowTitle()`)
+- command-line arguments
+  - `-w`, `-h` - initial window size in pixels
+  - `-p` - maximum number of particles in the system (see details later)
+  - `-r` - particle generator rate (number of generated particles in one second,
+    could be changed later using the keys `Up` and `Down`)
+  - `-t` - optional texture file (default is `:check:` = checkerboard)
+- console window is kept for simple messaging (`Util.Ut.Message()`)
+- [Trackball](../Silk3D/support/Trackball.cs) support
+- `class Util.FPS` is used for measuring FPS (Frames Per Seconds) and PPS
+  (Primitive Per Second)
+- **keyboard** and **mouse** event handling (including simple help `F1`)
+  - `KeyDown()`, `KeyUp()` for the keyboard
+  - `MouseDown()`, `MouseUp()`, `MouseDoubleClick()`, `MouseMove()`, `MouseScroll()`
+    for the mouse
+- simulation and rendering of simple **particle system**
+  - `Particle` is a **point** in 3D (position, color, age, size - 
+    you'll need more attributes for a fireworks!)
+  - `Simulation` is the whole particle system, responsible mainly for particle
+    management (creating, destroying)
+
+## Simulation
+The discrete time simulation function `SimulateTo()` is called from the `OnRender()` function.
+So one simulation step is called for each rendered frame.
+
+The particle data is updated every frame with the `GL.BufferSubData()` function. So every frame
+the whole particle system is updated (`SimulateTo()`) and then the whole vertex buffer
+is updated (`FillBuffer()`) and rendered.
+
+**Simulation logic**: the simulation manager (`class Simulation`) tries to keep the
+number of particles as close to `Simulation.MaxParticles` as possible. If some
+particles are retired, new ones are created.
+
+Each `Particle` has an age, initialized to the lifespan value at the beginning.
+The size and color of a particle changes according to its age. Please be inspired by this
+and use a mechanism that fits your fireworks logic.
+
+One more **warning** - the logic of your fireworks simulator should be different, you
+just don't want to exceed the **maximum number of particles** (as this would cause the
+vertex buffer to overflow).
+
+### Functions `SimulateTo(double time)`
+Simulates the entity (the whole particle system or individual `Particle`) until the desired time.
+The time in seconds is represented as a `double` value throughout the implementation.
+`Particle.SimulateTo()` has one more purpose - it returns `false` in case the particle
+is being retired and needs to be removed from the system.
+
+### Functions `FillBuffer(float[] buffer, ref int i)`
+Every time a parent system needs to update a vertex buffer, this function is called.
+It is supposed to fill **exactly** `VERTEX_SIZE` floats into the given `float[]`
+array with the index `i` (the index value must be incremented!).
+In our example, **12 floats** represent one particle
+(`x, y, z, R, G, B, Nx, Ny, Nz, s, t, size`).
+
+### Vertex shader `vertex.glsl`
+Note that one of the first things in the shader file is the definition of
+input quantities = vertex attributes. It must math the previously mentioned
+layout of the vertex buffer.
+```glsl
+layout (location = 0) in vec3 vPos;
+layout (location = 1) in vec3 vColor;
+layout (location = 2) in vec3 vNormal;
+layout (location = 3) in vec2 vTxt;
+layout (location = 4) in float vSize;
+```
+Uniforms - the shader needs three transformation matrices, they will be applied
+in the same order to a vertex position
+```glsl
+uniform mat4 model;
+uniform mat4 view;
+uniform mat4 projection;
+```
+Output values - they should be in sync with **input values of the fragment shader**.
+Note that `fWorld` is the original world-space coordinates (before the view and
+projection transforms) needed for shading (I know, shading is not a big deal
+in fireworks but you need not to turn it on)
+```glsl
+out vec3 fColor;
+out vec2 fTxt;
+out vec3 fNormal;
+out vec4 fWorld;
+```
+The last note is about "built-in" output variables. We are using two of them,
+`gl_Position` (`vec4`) and `gl_PointSize` (`float`).
+
+See the vertex shader [yourself](vertex.glsl) if you are interested.
+
+### Fragment shader `fragment.glsl`
+Fragment shader is used for coloring the fragments (pixels).
+Our shader has optional texturing (`texture()`) and optional Phong shading
+(actually most of the shader code).
+
+Note that the output value is explicitly declared in the shader
+```glsl
+out vec4 FragColor;
+```
+The reason for that is the possibility to use either `vec3` (RGB) or `vec4`
+(RGBA).
+
+See the fragment shader [yourself](fragment.glsl) if you are interested.
+
 # Your solution
 Please place your solution in a separate [solutions](solutions/README.md)
 directory in the repository. You'll find short instructions there.
