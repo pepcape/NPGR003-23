@@ -87,7 +87,7 @@ There is a pilot project in this GIT directory. We wanted to show a working
 OpenGL ([Silk.NET](https://www.nuget.org/packages/Silk.NET/)) project with
 
 - `Silk.NET.Windowing.Window`-based main program
-  - window title is using for simple realtime status (see `Program.WindowTitle()`)
+  - window title is used for simple real-time status (see `Program.WindowTitle()`)
 - command-line arguments
   - `-w`, `-h` - initial window size in pixels
   - `-p` - maximum number of particles in the system (see details later)
@@ -98,6 +98,7 @@ OpenGL ([Silk.NET](https://www.nuget.org/packages/Silk.NET/)) project with
 - [Trackball](../Silk3D/support/Trackball.cs) support
 - `class Util.FPS` is used for measuring FPS (Frames Per Seconds) and PPS
   (Primitive Per Second)
+  - try switching "Vertical synchronization" (VSync) on and off (key `V`)!
 - **keyboard** and **mouse** event handling (including simple help `F1`)
   - `KeyDown()`, `KeyUp()` for the keyboard
   - `MouseDown()`, `MouseUp()`, `MouseDoubleClick()`, `MouseMove()`, `MouseScroll()`
@@ -134,6 +135,11 @@ The time in seconds is represented as a `double` value throughout the implementa
 `Particle.SimulateTo()` has one more purpose - it returns `false` in case the particle
 is being retired and needs to be removed from the system.
 
+The pilot version of the `Particle.SimulateTo()` function is very simple. I just rotate
+the particles around a globally defined common axis. Each particle has its own position, rotation
+speed and color generated at creation time. Your **simulation logic** must be more
+complicated!
+
 ### Functions `FillBuffer(float[] buffer, ref int i)`
 Every time a parent system needs to update a vertex buffer, this function is called.
 It is supposed to fill **exactly** `VERTEX_SIZE` floats into the given `float[]`
@@ -159,10 +165,10 @@ uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 ```
-Output values - they should be in sync with **input values of the fragment shader**.
-Note that `fWorld` is the original world-space coordinates (before the view and
-projection transforms) needed for shading (I know, shading is not a big deal
-in fireworks but you need not to turn it on)
+Output values - they should be in sync with the **input values of the fragment shader**.
+Note that `fWorld` is the original world space coordinates (before the "view" and
+"projection" transformations) for shading (I know, shading is not a big deal
+in Fireworks but you do not need to turn it on).
 ```glsl
 out vec3 fColor;
 out vec2 fTxt;
@@ -183,7 +189,7 @@ Note that the output value is explicitly declared in the shader
 ```glsl
 out vec4 FragColor;
 ```
-The reason for that is the possibility to use either `vec3` (RGB) or `vec4`
+The reason for this is the ability to use either `vec3` (RGB) or `vec4`
 (RGBA).
 
 See the fragment shader [yourself](fragment.glsl) if you are interested.
