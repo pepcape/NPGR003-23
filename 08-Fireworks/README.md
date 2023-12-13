@@ -22,7 +22,7 @@ The entire 3D scene (fireworks) must be rendered interactively using the
   - current **position** (`Vector3`)
   - current **velocity** (`Vector3`)
   - current **RGB color** (`Vector3`)
-  - **age** in seconds (`float`) to simulate aging and demise
+  - **age** in seconds (`float` or `double`) to simulate aging and demise
   - **inner state** of the particle (anything you need for proper simulation)
   - **mass** could be constant (`float`)
   - **drag coefficients** could be constant (`float[]`)
@@ -149,7 +149,7 @@ In our example, **12 floats** represent one particle
 
 ### Vertex shader `vertex.glsl`
 Note that one of the first things in the shader file is the definition of
-input quantities = vertex attributes. It must math the previously mentioned
+input quantities = vertex attributes. **It must match** the previously mentioned
 layout of the vertex buffer.
 ```glsl
 layout (location = 0) in vec3 vPos;
@@ -158,14 +158,14 @@ layout (location = 2) in vec3 vNormal;
 layout (location = 3) in vec2 vTxt;
 layout (location = 4) in float vSize;
 ```
-Uniforms - the shader needs three transformation matrices, they will be applied
-in the same order to a vertex position
+**Uniforms** - the shader requires three transformation matrices.
+They are applied to a vertex position in the following order
 ```glsl
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 ```
-Output values - they should be in sync with the **input values of the fragment shader**.
+**Output values** - they should be in sync with the **input values of the fragment shader**.
 Note that `fWorld` is the original world space coordinates (before the "view" and
 "projection" transformations) for shading (I know, shading is not a big deal
 in Fireworks but you do not need to turn it on).
@@ -175,10 +175,10 @@ out vec2 fTxt;
 out vec3 fNormal;
 out vec4 fWorld;
 ```
-The last note is about "built-in" output variables. We are using two of them,
-`gl_Position` (`vec4`) and `gl_PointSize` (`float`).
+The last note is about **"built-in" output variables**. We are using two of them,
+`gl_Position` (`vec4`) and `gl_PointSize` (`float` - point size in pixels).
 
-See the vertex shader [yourself](vertex.glsl) if you are interested.
+See the [vertex.glsl](vertex.glsl) shader yourself if you are interested.
 
 ### Fragment shader `fragment.glsl`
 Fragment shader is used for coloring the fragments (pixels).
@@ -192,7 +192,7 @@ out vec4 FragColor;
 The reason for this is the ability to use either `vec3` (RGB) or `vec4`
 (RGBA).
 
-See the fragment shader [yourself](fragment.glsl) if you are interested.
+See the [fragment.glsl](fragment.glsl) shader yourself if you are interested.
 
 # Your solution
 Please place your solution in a separate [solutions](solutions/README.md)
