@@ -6,7 +6,6 @@ using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using Silk.NET.Maths;
 using System.Globalization;
-using System.Runtime.InteropServices;
 using System.Text;
 using Util;
 // ReSharper disable InconsistentNaming
@@ -404,6 +403,7 @@ internal class Program
         WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(o.WindowWidth, o.WindowHeight);
         options.Title = WindowTitle();
+        options.PreferredDepthBufferBits = 24;
         options.VSync = true;
 
         window = Window.Create(options);

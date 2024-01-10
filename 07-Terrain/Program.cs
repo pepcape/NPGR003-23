@@ -221,6 +221,7 @@ internal class Program
         WindowOptions options = WindowOptions.Default;
         options.Size = new Vector2D<int>(o.WindowWidth, o.WindowHeight);
         options.Title = WindowTitle();
+        options.PreferredDepthBufferBits = 24;
         options.VSync = true;
 
         window = Window.Create(options);
