@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.InteropServices;
 using Silk.NET.OpenGL;
 
 namespace Util;
@@ -9,6 +10,16 @@ public class BufferObject<TDataType> : IDisposable
 	private uint _handle;
 	private BufferTargetARB _bufferType;
 	private GL _gl;
+
+  public unsafe BufferObject (GL gl, uint size, BufferTargetARB bufferType)
+  {
+    _gl = gl;
+    _bufferType = bufferType;
+
+    _handle = _gl.GenBuffer();
+    Bind();
+    _gl.BufferData(bufferType, (nuint)(size * sizeof(TDataType)), (void*)0, BufferUsageARB.DynamicDraw);
+  }
 
 	public unsafe BufferObject(GL gl, Span<TDataType> data, BufferTargetARB bufferType)
 	{
@@ -31,6 +42,16 @@ public class BufferObject<TDataType> : IDisposable
 			_gl.BufferSubData(_bufferType, (nint)(from * sizeof(TDataType)), (nuint)(size * sizeof(TDataType)), ((byte*)d) + from * sizeof(TDataType));
 		}
 	}
+
+  public unsafe void UpdateData (List<TDataType> array, int from, int size)
+  {
+    var span = CollectionsMarshal.AsSpan(array);
+    Bind();
+    fixed (void* d = span)
+    {
+      _gl.BufferSubData(_bufferType, (nint)(from * sizeof(TDataType)), (nuint)(size * sizeof(TDataType)), ((byte*)d) + from * sizeof(TDataType));
+    }
+  }
 
 	public void Bind()
 	{
