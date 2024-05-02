@@ -1,6 +1,8 @@
 ﻿using CommandLine;
+using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.ColorSpaces;
 using SixLabors.ImageSharp.ColorSpaces.Conversion;
+using SixLabors.ImageSharp.PixelFormats;
 
 namespace _01_AllTheColors;
 
